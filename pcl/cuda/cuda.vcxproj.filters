@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{c93135a9-ecd1-4f49-99be-fecf61a25703}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{62dfb6dc-f3d0-47c9-9862-c3db296f0ed0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Kernel Files">
+      <UniqueIdentifier>{4a660a0a-5d93-4782-a7ea-62fd9af44290}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cuda_nn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cuda_common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cuda_nn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

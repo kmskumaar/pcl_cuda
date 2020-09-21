@@ -113,6 +113,7 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearch(flann::Matrix<float>& queryDeviceM
 	flann::SearchParams sp;
 	sp.matrices_in_gpu_ram = true;	
 	return (this->kdIndex->knnSearch(queryDeviceMatrix, indicesDeviceMatrix, distDeviceMatrix, neighbors, sp));
+	
 }
 
 //template <>

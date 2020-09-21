@@ -47,13 +47,18 @@ int main() {
 	//int nn = 10;
 	flann::Matrix<float> dists;
 	flann::Matrix<int> indices;
-	const int nn = 50;
+	const int nn = 20;
 	const int max_nn = 20;
-	float rad = 600;
-	pcl::nn::KDTreeCPU<float> kdTreeCPU;
-	kdTreeCPU.setInputCloud(cld);
-	kdTreeCPU.buildIndex();
-	kdTreeCPU.knnSearch1Point(cld.at(0), indices, dists, rad, max_nn);
+	float rad = 1000;
+
+	//pcl::nn::KDTreeCPU<float> kdTreeCPU;
+	//kdTreeCPU.setInputCloud(cld);
+	//kdTreeCPU.buildIndex();
+	//kdTreeCPU.knnSearch1Point(cld.at(0), indices, dists, rad, max_nn);
+
+	pclcuda::nn::KDTreeCUDA<float> kdTreeGPU;
+	kdTreeGPU.setInputCloud(cld);
+	kdTreeGPU.knnSearchNPoints(query, indices, dists, rad, max_nn);
 	
 	//pclcuda::nn::KDTreeCUDA<float> kdTreeGPU;
 	//auto t1 = std::chrono::steady_clock::now();
@@ -74,7 +79,7 @@ int main() {
 			//double actualDistCPU = eucDist(query_host[i], data_host[indices[i][j]]);
 			//printf("%d \t \t%f \t%f \t%f \t%f\n", i, dists_host[i][j], dists[i][j], actualDistGPU, actualDistCPU);
 
-			std::cout << (indices[i][j]) << delim;
+			std::cout << sqrtf(dists[i][j]) << delim;
 
 			//printf("%d \t \t%d \t%d \n", i, indices_host[i][j], indices[i][j]);
 

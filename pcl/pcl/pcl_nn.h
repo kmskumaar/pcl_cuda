@@ -41,6 +41,7 @@ namespace pcl {
 			[out] indices - Pointer to flann::Matrix for the indices of the nearest point
 			[out] dist - Pointer to flann::Matrix for the squared distances to the nearest point
 			[in] radius - Radius in the units of the points
+			[in] max_neighbor - Maximum neighbors that should be returned by the radius search
 			*/
 			int knnSearch1Point(pcl::PointXYZ<T_CPU>& queryPoint, flann::Matrix<int>& indices, flann::Matrix<T_CPU>& dist, float radius, int max_neighbors);
 
@@ -59,6 +60,7 @@ namespace pcl {
 			[out] indices - Pointer to flann::Matrix for the indices of the nearest point
 			[out] dist - Pointer to flann::Matrix for the squared distances to the nearest point
 			[in] radius - Radius in the units of the points
+			[in] max_neighbor - Maximum neighbors that should be returned by the radius search
 			*/
 			int knnSearchNPoints(pcl::PointCloud<T_CPU>& queryVec, flann::Matrix<int>& indices, flann::Matrix<T_CPU>& dist, float radius, int max_neighbors);
 
@@ -78,6 +80,7 @@ namespace pcl {
 			[out] indices - Pointer to flann::Matrix for the indices of the nearest point
 			[out] dist - Pointer to flann::Matrix for the squared distances to the nearest point
 			[in] radius - Radius 
+			[in] max_neighbor - Maximum neighbors that should be returned by the radius search
 			*/
 			int knnSearch(flann::Matrix<T_CPU>& query, flann::Matrix<int>& indices, flann::Matrix<T_CPU>& dist, float radius, int max_neighbors);
 		};

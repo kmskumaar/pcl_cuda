@@ -33,6 +33,17 @@ namespace pclcuda {
 			*/
 			int knnSearchNPoints(pcl::PointCloud<T_CPU>& inQueryHost, flann::Matrix<int>& indices, flann::Matrix<T_CPU>& sqrDist, int neighbors);
 
+			/*
+			Search for the nearest neighbor for "N" Points
+			[in] queryVec - Pointer to pcl::PointCloud<T_CPU> point cloud to query
+			[out] indices - Pointer to flann::Matrix for the indices of the nearest point
+			[out] dist - Pointer to flann::Matrix for the squared distances to the nearest point
+			[in] radius - Radius for the search field in the unit of the points
+			[in] max_neighbor - Maximum neighbors that should be returned by the radius search			
+			[return] - Number of nearest neighbor results. It should be equal to neighbors*querypoints
+			*/
+			int knnSearchNPoints(pcl::PointCloud<T_CPU>& inQueryHost, flann::Matrix<int>& indices, flann::Matrix<T_CPU>& sqrDist, float radius, int max_neighbors);
+
 		private:
 			/*
 			Search for the nearest neighbor for "N" Points
@@ -43,6 +54,17 @@ namespace pclcuda {
 			[return] - Number of nearest neighbor results. It should be equal to neighbors*querypoints
 			*/
 			int knnSearch(flann::Matrix<T_CPU>& queryDeviceMatrix, flann::Matrix<int>& indicesDeviceMatrix, flann::Matrix<T_CPU>& distDeviceMatrix, int neighbors);
+
+			/*
+			Search for the nearest neighbor for "N" Points
+			[in] query - Pointer to flann::Matrix<T_CPU> points to query
+			[out] indices - Pointer to flann::Matrix for the indices of the nearest point
+			[out] dist - Pointer to flann::Matrix for the squared distances to the nearest point
+			[in] radius - Radius of the search field in the units of the point
+			[in] max_neighbor - Maximum neighbors that should be returned by the radius search
+			[return] - Number of nearest neighbor results. It should be equal to neighbors*querypoints
+			*/
+			int knnSearch(flann::Matrix<T_CPU>& queryDeviceMatrix, flann::Matrix<int>& indicesDeviceMatrix, flann::Matrix<T_CPU>& distDeviceMatrix, float radius, int max_neighbor);
 		};
 	}
 	

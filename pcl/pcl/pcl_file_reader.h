@@ -27,7 +27,6 @@ namespace pcl {
 			*/
 			template<typename T>
 			bool readSTLFile(const std::string stlFile, pcl::PolygonMesh<T>& mesh);
-			
 
 		private:
 			std::ifstream inFileStream;

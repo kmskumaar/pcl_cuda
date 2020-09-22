@@ -49,9 +49,76 @@ namespace pcl {
 		}
 	};
 
+	/*
+	Datatype for holding vectors. Allowable templates: <float> and <double>
+	*/
+	template<typename T>
+	struct DVector {
+		T i;
+		T j;
+		T k;
+
+		//DVector(T i_, T j_, T k_) :i(i_), j(j_), k(k_) {}
+
+		DVector operator + (DVector const &vec2) {
+			DVector newVec;
+			newVec.i = i + vec2.i;
+			newVec.j = j + vec2.j;
+			newVec.k = k + vec2.k;
+			return newVec;
+		}
+
+		DVector operator - (DVector const &vec2) {
+			DVector newVec;
+			newVec.i = i - vec2.i;
+			newVec.j = j - vec2.j;
+			newVec.k = k - vec2.k;
+			return newVec;
+		}
+
+		DVector operator * (T const &scalar) {
+			DVector newVec;
+			newVec.i = i * scalar;
+			newVec.j = j * scalar;
+			newVec.k = k * scalar;
+			return newVec;
+		}
+
+		DVector operator / (T const &scalar) {
+			DVector newVec;
+			newVec.i = i / scalar;
+			newVec.j = j / scalar;
+			newVec.k = k / scalar;
+			return newVec;
+		}
+
+		T norm2() {		
+			return (sqrt(i * i + j * j + k * k));
+		}
+
+		DVector normalize() {
+			return ((*this) / this->norm2());
+		}
+
+		DVector cross(DVector& vec2) {
+			DVector result;
+			result.i = (j * vec2.k) - (k * vec2.j);
+			result.j = (k * vec2.i) - (i * vec2.k);
+			result.k = (i * vec2.j) - (j * vec2.i);
+
+			return result;
+		}
+	};
+
 	template<typename T>
 	std::ostream& operator << (std::ostream& os, const PointXYZ<T>& pt) {
 		os << "X: " << pt.x << "\tY: " << pt.y << "\tZ: " << pt.z;
+		return os;
+	}
+
+	template<typename T>
+	std::ostream& operator << (std::ostream& os, const DVector<T>& vec) {
+		os << "I: " << vec.i << "\tJ: " << vec.j << "\tK: " << vec.k;
 		return os;
 	}
 
@@ -60,6 +127,10 @@ namespace pcl {
 	*/
 	template<typename T>
 	using PointCloud = std::vector<PointXYZ<T>>;
+
+
+	template<typename T>
+	using Normal = DVector<T>;
 
 	typedef std::vector<int> Indices;
 

@@ -8,10 +8,18 @@
 
 namespace pclcuda {
 	namespace nn {
+		/*
+		Class for finding the nearest neighbors by utilizing the CUDA kernels. 
+		Implementation availble only for float/float4 datatypes
+		*/
 		template <class T_CPU>
 		class KDTreeCUDA
 		{
 		public:
+
+			thrust::device_vector<int> indices_d;
+			thrust::device_vector<T_CPU> sqrDists_d;
+
 			/*
 			Pointer to the CUDA KD Index
 			*/
@@ -43,6 +51,16 @@ namespace pclcuda {
 			[return] - Number of nearest neighbor results. It should be equal to neighbors*querypoints
 			*/
 			int knnSearchNPoints(pcl::PointCloud<T_CPU>& inQueryHost, flann::Matrix<int>& indices, flann::Matrix<T_CPU>& sqrDist, float radius, int max_neighbors);
+
+			/*
+			Returns the pointer to the thrust device vector for Indices			
+			*/
+			thrust::device_vector<int> getIndicesDevicePtr();
+
+			/*
+			Returns the pointer to the thrust device vector for Squared Distances
+			*/
+			thrust::device_vector<T_CPU> getSqrtDistDevicePtr();
 
 		private:
 			/*

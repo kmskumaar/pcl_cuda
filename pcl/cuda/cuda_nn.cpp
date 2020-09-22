@@ -54,11 +54,11 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearchNPoints(pcl::PointCloud<float>& inQ
 	thrust::host_vector<int> indices_temp(noOfPts * neighbors);
 	thrust::host_vector<float> dists_temp(noOfPts * neighbors);
 
-	thrust::device_vector<int> indices_device = indices_temp;
-	thrust::device_vector<float> dists_device = dists_temp;
+	this->indices_d = indices_temp;
+	this->sqrDists_d = dists_temp;
 
-	flann::Matrix<int> indices_device_matrix((int*)thrust::raw_pointer_cast(&indices_device[0]), noOfPts, neighbors);
-	flann::Matrix<float> dists_device_matrix((float*)thrust::raw_pointer_cast(&dists_device[0]), noOfPts, neighbors);
+	flann::Matrix<int> indices_device_matrix((int*)thrust::raw_pointer_cast(&this->indices_d[0]), noOfPts, neighbors);
+	flann::Matrix<float> dists_device_matrix((float*)thrust::raw_pointer_cast(&this->sqrDists_d[0]), noOfPts, neighbors);
 
 	flann::SearchParams sp;
 	sp.matrices_in_gpu_ram = true;
@@ -67,8 +67,8 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearchNPoints(pcl::PointCloud<float>& inQ
 	indices_host = flann::Matrix<int>(new int[noOfPts * neighbors], noOfPts, neighbors);
 	sqrDist_host = flann::Matrix<float>(new float[noOfPts * neighbors], noOfPts, neighbors);
 
-	thrust::copy(dists_device.begin(), dists_device.end(), sqrDist_host.ptr());
-	thrust::copy(indices_device.begin(), indices_device.end(), indices_host.ptr());
+	thrust::copy(this->sqrDists_d.begin(), this->sqrDists_d.end(), sqrDist_host.ptr());
+	thrust::copy(this->indices_d.begin(), this->indices_d.end(), indices_host.ptr());
 
 	return result;
 }
@@ -124,11 +124,11 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearchNPoints(pcl::PointCloud<float>& inQ
 	thrust::host_vector<int> indices_temp(noOfPts * max_neighbors);
 	thrust::host_vector<float> dists_temp(noOfPts * max_neighbors);
 
-	thrust::device_vector<int> indices_device = indices_temp;
-	thrust::device_vector<float> dists_device = dists_temp;
+	this->indices_d = indices_temp;
+	this->sqrDists_d = dists_temp;
 
-	flann::Matrix<int> indices_device_matrix((int*)thrust::raw_pointer_cast(&indices_device[0]), noOfPts, max_neighbors);
-	flann::Matrix<float> dists_device_matrix((float*)thrust::raw_pointer_cast(&dists_device[0]), noOfPts, max_neighbors);
+	flann::Matrix<int> indices_device_matrix((int*)thrust::raw_pointer_cast(&this->indices_d[0]), noOfPts, max_neighbors);
+	flann::Matrix<float> dists_device_matrix((float*)thrust::raw_pointer_cast(&this->sqrDists_d[0]), noOfPts, max_neighbors);
 
 	flann::SearchParams sp;
 	sp.matrices_in_gpu_ram = true;
@@ -137,8 +137,8 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearchNPoints(pcl::PointCloud<float>& inQ
 	indices_host = flann::Matrix<int>(new int[noOfPts * max_neighbors], noOfPts, max_neighbors);
 	sqrDist_host = flann::Matrix<float>(new float[noOfPts * max_neighbors], noOfPts, max_neighbors);
 
-	thrust::copy(dists_device.begin(), dists_device.end(), sqrDist_host.ptr());
-	thrust::copy(indices_device.begin(), indices_device.end(), indices_host.ptr());
+	thrust::copy(this->sqrDists_d.begin(), this->sqrDists_d.end(), sqrDist_host.ptr());
+	thrust::copy(this->indices_d.begin(), this->indices_d.end(), indices_host.ptr());
 
 	return result;
 }
@@ -167,4 +167,12 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearch(flann::Matrix<float>& queryDeviceM
 	return (this->kdIndex->radiusSearch(queryDeviceMatrix, indicesDeviceMatrix, distDeviceMatrix, radius, sp));
 }
 
+template <>
+thrust::device_vector<int> pclcuda::nn::KDTreeCUDA<float>::getIndicesDevicePtr() {
+	return this->indices_d;
+}
 
+template <>
+thrust::device_vector<float> pclcuda::nn::KDTreeCUDA<float>::getSqrtDistDevicePtr() {
+	return this->sqrDists_d;
+}

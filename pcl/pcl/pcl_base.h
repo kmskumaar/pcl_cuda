@@ -63,6 +63,20 @@ namespace pcl {
 
 	typedef std::vector<int> Indices;
 
+	typedef std::vector<int> Vertices;
+
+
+	/*
+	Polygon Mesh Data Structure
+	*/
+	template<typename T>
+	struct PolygonMesh {
+		pcl::PointCloud<T> cloud;
+
+		std::vector<Vertices> polygon;
+
+	};
+
 	//namespace cuda {
 	//	template<typename T>
 	//	using  PointCloudHost = thrust::host_vector<T>;

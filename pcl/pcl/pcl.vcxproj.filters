@@ -27,6 +27,9 @@
     <ClInclude Include="pcl_nn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stl_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pcl_file_reader.cpp">

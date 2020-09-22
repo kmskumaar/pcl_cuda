@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "pcl_base.h"
+#include "stl_reader.h"
 
 namespace pcl {
 	namespace io {
@@ -18,6 +19,15 @@ namespace pcl {
 			*/
 			template<typename T>
 			int readASCIIFile(const std::string cloudFile, pcl::PointCloud<T>& pointCloud, const char* delim = ",");
+
+			/*
+			Reads the STL files
+			[in] stlFile - Path to the STL file
+			[out] mesh - mesh file of type pcl::PolygonMesh 
+			*/
+			template<typename T>
+			bool readSTLFile(const std::string stlFile, pcl::PolygonMesh<T>& mesh);
+			
 
 		private:
 			std::ifstream inFileStream;

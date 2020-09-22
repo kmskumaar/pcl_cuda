@@ -55,12 +55,12 @@ namespace pclcuda {
 			/*
 			Returns the pointer to the thrust device vector for Indices			
 			*/
-			thrust::device_vector<int> getIndicesDevicePtr();
+			int* getIndicesDevicePtr();
 
 			/*
 			Returns the pointer to the thrust device vector for Squared Distances
 			*/
-			thrust::device_vector<T_CPU> getSqrtDistDevicePtr();
+			T_CPU* getSqrtDistDevicePtr();
 
 		private:
 			/*

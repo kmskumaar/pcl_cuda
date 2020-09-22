@@ -168,11 +168,11 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearch(flann::Matrix<float>& queryDeviceM
 }
 
 template <>
-thrust::device_vector<int> pclcuda::nn::KDTreeCUDA<float>::getIndicesDevicePtr() {
-	return this->indices_d;
+int* pclcuda::nn::KDTreeCUDA<float>::getIndicesDevicePtr() {
+	return (int*)thrust::raw_pointer_cast(&this->indices_d[0]);
 }
 
 template <>
-thrust::device_vector<float> pclcuda::nn::KDTreeCUDA<float>::getSqrtDistDevicePtr() {
-	return this->sqrDists_d;
+float* pclcuda::nn::KDTreeCUDA<float>::getSqrtDistDevicePtr() {
+	return (float*)thrust::raw_pointer_cast(&this->sqrDists_d[0]);
 }

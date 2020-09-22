@@ -146,6 +146,8 @@ namespace pcl {
 
 		std::vector<Vertices> polygon;
 
+		std::vector<pcl::Normal<T>> normals;
+
 	};
 
 	//namespace cuda {

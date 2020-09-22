@@ -52,28 +52,39 @@ bool pcl::io::FileReader::readSTLFile(const std::string stlFile, pcl::PolygonMes
 		mesh.cloud.resize(noOfVertices);
 		mesh.polygon.clear();
 		mesh.polygon.resize(noOfPolygons);
+		mesh.normals.clear();
+		mesh.normals.resize(noOfPolygons);
+
+		pcl::Vertices vertices;
+		pcl::Normal<T> normal;
 
 		const T* cloudArray = istlReader.raw_coords();
-		// Copying the vertice points
+		const unsigned int* verticesArray = istlReader.raw_tris();
+		const T* normalArray = istlReader.raw_normals();
+
 		for (size_t i = 0; i < noOfVertices; i++)
 		{
+			// Copying the vertice points
 			mesh.cloud.at(i).x = cloudArray[(i * 3) + 0];
 			mesh.cloud.at(i).y = cloudArray[(i * 3) + 1];
 			mesh.cloud.at(i).z = cloudArray[(i * 3) + 2];
-		}
+		}	
 
-		pcl::Vertices vertices;
-		const unsigned int* verticesArray = istlReader.raw_tris();
-		// Copying the index for the vertices of the polygons
-		for (size_t j = 0; j < noOfPolygons; j++)
+		for (size_t i = 0; i < noOfPolygons; i++)
 		{
+			// Copying the index for the vertices of the polygons
 			vertices.resize(3);
-			vertices.at(0) = verticesArray[(j * 3) + 0];
-			vertices.at(1) = verticesArray[(j * 3) + 1];
-			vertices.at(2) = verticesArray[(j * 3) + 2];
+			vertices.at(0) = verticesArray[(i * 3) + 0];
+			vertices.at(1) = verticesArray[(i * 3) + 1];
+			vertices.at(2) = verticesArray[(i * 3) + 2];
+			mesh.polygon.at(i) = vertices;
 
-			mesh.polygon.at(j) = vertices;
-		}
+			// Copying the normalized normal vector of each polygons
+			normal.i = normalArray[(i * 3) + 0];
+			normal.j = normalArray[(i * 3) + 1];
+			normal.k = normalArray[(i * 3) + 2];
+			mesh.normals.at(i) = normal.normalize();
+		}	
 	}
 	
 	catch (std::exception &e) {

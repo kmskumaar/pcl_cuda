@@ -164,7 +164,7 @@ int pclcuda::nn::KDTreeCUDA<float>::knnSearch(flann::Matrix<float>& queryDeviceM
 	sp.matrices_in_gpu_ram = true;
 	sp.max_neighbors = max_neighbors;
 	sp.sorted = true;
-	return (this->kdIndex->radiusSearch(queryDeviceMatrix, indicesDeviceMatrix, distDeviceMatrix, radius, sp));
+	return (this->kdIndex->radiusSearch(queryDeviceMatrix, indicesDeviceMatrix, distDeviceMatrix, pow(radius, 2), sp));
 }
 
 template <>

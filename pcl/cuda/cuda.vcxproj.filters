@@ -18,6 +18,9 @@
     <ClCompile Include="cuda_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cuda_base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cuda_nn.h">
@@ -26,5 +29,6 @@
     <ClInclude Include="cuda_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cuda_base.h" />
   </ItemGroup>
 </Project>

@@ -88,7 +88,7 @@ int pcl::nn::KDTreeCPU<T_CPU>::knnSearchNPoints(pcl::PointCloud<T_CPU>& queryVec
 		queryMat[i][2] = queryVec.at(i).z;
 	}
 
-	return (this->knnSearch(queryMat, indices, dist, radius));
+	return (this->knnSearch(queryMat, indices, dist, radius, max_neighbors));
 }
 
 template <typename T_CPU>
@@ -103,7 +103,8 @@ int pcl::nn::KDTreeCPU<T_CPU>::knnSearch(flann::Matrix<T_CPU>& query, flann::Mat
 	int totalProcessed = 0;
 	flann::SearchParams searchParams(128);
 	searchParams.max_neighbors = max_neighbors;
-	totalProcessed = this->kdIndex->radiusSearch(query, indices, dist, radius, searchParams);
+	searchParams.sorted = true;
+	totalProcessed = this->kdIndex->radiusSearch(query, indices, dist, pow(radius, 2), searchParams);
 	return totalProcessed;
 }
 

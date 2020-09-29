@@ -11,10 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cuda_base.cpp" />
     <ClCompile Include="cuda_common.cpp" />
     <ClCompile Include="cuda_nn.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cuda_base.h" />
     <ClInclude Include="cuda_common.h" />
     <ClInclude Include="cuda_nn.h" />
   </ItemGroup>

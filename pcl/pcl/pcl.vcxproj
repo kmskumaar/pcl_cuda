@@ -131,11 +131,13 @@
     <ClInclude Include="pcl_common.h" />
     <ClInclude Include="pcl_file_reader.h" />
     <ClInclude Include="pcl_nn.h" />
+    <ClInclude Include="pcl_preprocess.h" />
     <ClInclude Include="stl_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pcl_file_reader.cpp" />
     <ClCompile Include="pcl_nn.cpp" />
+    <ClCompile Include="pcl_preprocess.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -132,7 +132,11 @@ namespace pcl {
 	template<typename T>
 	using Normal = DVector<T>;
 
-	typedef std::vector<int> Indices;
+	struct Indices {
+		std::vector<int> indices;
+	};
+
+	typedef std::vector<Indices> Clusters;
 
 	typedef std::vector<int> Vertices;
 

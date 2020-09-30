@@ -96,8 +96,47 @@ bool pcl::io::FileReader::readSTLFile(const std::string stlFile, pcl::PolygonMes
 	return true;
 }
 
+template<typename T>
+bool pcl::io::FileWriter::writeASCIIFile(const std::string filePath, pcl::PointCloud<T>& cld, pcl::Indices& indices,
+	const int precision, const char* delim, const bool append) {
+	try {
+		if (cld.size() == 0)
+			throw ("Cloud File to write is empty");
+
+		if (append)
+			this->outFileStream.open(filePath, std::ios::app);
+		else
+			this->outFileStream.open(filePath);
+
+		this->outFileStream << std::setprecision(precision);
+
+		if (indices.indices.size() == 0) {
+			for (size_t i = 0; i < cld.size(); i++)
+				this->outFileStream << cld.at(i).x << delim << cld.at(i).y << delim << cld.at(i).z << std::endl;
+		}
+
+		else {
+			for (size_t i = 0; i < indices.indices.size(); i++)
+				this->outFileStream << cld.at(indices.indices[i]).x << delim << cld.at(indices.indices[i]).y << delim << cld.at(indices.indices[i]).z << std::endl;
+		}
+
+	}
+
+	catch (std::exception &e) {
+		this->outFileStream.close();
+		std::cout << "ASCII Write Error: " << e.what() << "\t";
+		std::cout << "Unable to write the ASCII File: " << filePath << std::endl;
+		return false;
+	}
+	this->outFileStream.close();
+	return true;
+}
+
 template int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, PointCloud<float>& pointCloud, const char* delim /*= ","*/);
 template bool pcl::io::FileReader::readSTLFile(const std::string stlFile, pcl::PolygonMesh<float>& mesh);
 
 template int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, PointCloud<double>& pointCloud, const char* delim /*= ","*/);
 template bool pcl::io::FileReader::readSTLFile(const std::string stlFile, pcl::PolygonMesh<double>& mesh);
+
+template bool pcl::io::FileWriter::writeASCIIFile(const std::string filePath, pcl::PointCloud<float>& cld, pcl::Indices& indices, const int precision, const char* delim, const bool append);
+template bool pcl::io::FileWriter::writeASCIIFile(const std::string filePath, pcl::PointCloud<double>& cld, pcl::Indices& indices, const int precision, const char* delim, const bool append);

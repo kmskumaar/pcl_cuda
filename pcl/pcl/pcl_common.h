@@ -38,6 +38,13 @@
 //}
 
 namespace pcl {
+
+	/*
+	Computes the centroid for the given indices in the point cloud 
+	[in] inCloud - Pointer to the input cloud 
+	[in] indices - Pointer to the indices	
+	[return] pcl::PointXYZ - centroid for the points mentioned in the indices
+	*/
 	template<typename T>
 	pcl::PointXYZ<T> get3DCentroid(pcl::PointCloud<T>& inCloud, pcl::Indices &indices) {
 
@@ -57,6 +64,11 @@ namespace pcl {
 		return returnCentroid;
 	}
 
+	/*
+	Computes the centroid for the entire point cloud
+	[in] inCloud - Pointer to the input cloud
+	[return] pcl::PointXYZ - centroid for the point cloud
+	*/
 	template<typename T>
 	pcl::PointXYZ<T> get3DCentroid(pcl::PointCloud<T>& inCloud) {
 
@@ -75,5 +87,63 @@ namespace pcl {
 		returnCentroid.z = centroidDouble.z;
 		return returnCentroid;
 	}
+
+
+	template<typename T>
+	pcl::PointCloud<T> demeanCloud(pcl::PointCloud<T>& inCloud) {
+
+		pcl::PointCloud<T> outCloud;
+		outCloud.resize(inCloud.size());
+		pcl::PointXYZ<T> centroid = get3DCentroid<T>(inCloud);
+
+		for (size_t idx = 0; idx < inCloud.size(); idx++)
+			outCloud[idx] = inCloud[idx] - centroid;
+
+		return outCloud;
+	}
+
+	/*
+	Demeans only the points meantioned in the indices 
+	[in] inCloud - Pointer to the input cloud
+	[in] indices - Pointer to the indices
+	[in] useCldCentroid - Uses the centroid of the entire point cloud. When false, uses only the centroid of the points in indices
+	[return] pcl::PointXYZ - centroid for the points mentioned in the indices
+	*/
+	template<typename T>
+	pcl::PointCloud<T> demeanCloud(pcl::PointCloud<T>& inCloud, pcl::Indices indices, const bool useCldCentroid = false) {
+
+		pcl::PointCloud<T> outCloud;
+		outCloud.resize(indices.indices.size());
+		pcl::PointXYZ<T> centroid;
+		if (useCldCentroid)
+			centroid = get3DCentroid<T>(inCloud);
+		else
+			centroid = get3DCentroid<T>(inCloud, indices);
+
+		for (size_t idx = 0; idx < indices.indices.size(); idx++)
+			outCloud[idx] = inCloud[indices.indices[idx]] - centroid;
+
+		return outCloud;
+	}
+
+	/*
+	Flips the normal vector to the view point
+	[in] pt - input cloud point
+	[in] viewPt - viewpoint
+	[out] normal - Pointer to the Normal vector that has to be flipped	
+	*/
+	template<typename T>
+	void flipNormalToViewPoint(pcl::PointXYZ<T> pt, pcl::PointXYZ<T> viewPt, pcl::Normal<T>& normal) {
+	
+		pcl::Normal<T> losVec = reinterpret_cast<pcl::Normal<T>&>(viewPt - pt); //Line of Sight
+
+		losVec = losVec.normalize();
+
+		pcl::Normal<T> crossPro = losVec.cross(normal);
+		float angle = atan2(crossPro.norm2(), losVec.dot(normal));
+		if (angle > M_PI_2 || angle < -M_PI_2)
+			normal = normal * (-1);
+	}
+	
 }
 

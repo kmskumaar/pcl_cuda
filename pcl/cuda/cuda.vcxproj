@@ -14,13 +14,11 @@
     <ClCompile Include="cuda_base.cpp" />
     <ClCompile Include="cuda_common.cpp" />
     <ClCompile Include="cuda_nn.cpp" />
-    <ClCompile Include="cuda_preprocess.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cuda_base.h" />
     <ClInclude Include="cuda_common.h" />
     <ClInclude Include="cuda_nn.h" />
-    <ClInclude Include="cuda_preprocess.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B5FDFA7A-FB6A-4078-A2E5-F3539DC9B612}</ProjectGuid>

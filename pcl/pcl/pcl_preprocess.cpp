@@ -1,7 +1,7 @@
 #include "pcl_preprocess.h"
 
 template <typename T>
-pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inCloud, const float tol, const int max_nn) {
+pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inCloud, float tol, bool useCUDATree) {
 	
 	pcl::Clusters outCluster;
 	outCluster.clear();
@@ -11,13 +11,12 @@ pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inClou
 	flg.resize(inCloud.size());
 	std::fill(flg.begin(), flg.end(), false);	// Initializing the vector
 
-	// Setting the Kd- tree and querying all the points
-	flann::Matrix<float> flannDists;
-	flann::Matrix<int> flannIndices;
+	flann::Matrix<float> dists;
+	flann::Matrix<int> indices;
 	pcl::nn::KDTreeCPU<float> kdTreeCPU;
 	kdTreeCPU.setInputCloud(inCloud);
 	kdTreeCPU.buildIndex();
-	kdTreeCPU.knnSearchNPoints(inCloud, flannIndices, flannDists, tol, max_nn); //Radius search for all points
+	int max_nn = 2000;
 
 	for (size_t idx = 0; idx < inCloud.size(); idx++)
 	{
@@ -34,16 +33,16 @@ pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inClou
 		for (size_t s = 0; s < queueLength; s++)
 		{
 			pcl::PointXYZ<T> queryPt = inCloud.at(queue.indices.at(s));
-			//kdTreeCPU.knnSearch1Point(queryPt, indices, flannDists, tol, max_nn);
+			kdTreeCPU.knnSearch1Point(queryPt, indices, dists, tol, max_nn);
 
 			for (size_t i = 0; i < max_nn; i++)
 			{				
-				if ((flannIndices[queue.indices[s]][i] >= 0) && (!flg[flannIndices[queue.indices[s]][i]]))
+				if ((indices[0][i] >= 0) && (!flg[indices[0][i]]))
 				{
-					queue.indices.push_back(flannIndices[queue.indices[s]][i]);
-					flg[flannIndices[queue.indices[s]][i]] = true;
+					queue.indices.push_back(indices[0][i]);
+					flg[indices[0][i]] = true;
 				}
-				if (flannIndices[queue.indices[s]][i] < 0)
+				if (indices[0][i] < 0)
 					break;
 								
 			}
@@ -56,4 +55,4 @@ pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inClou
 }
 
 
-template pcl::Clusters pcl::PreProcess<float>::euclideanClustering(pcl::PointCloud<float>& inCloud, const float tol, const int max_nn);
+template pcl::Clusters pcl::PreProcess<float>::euclideanClustering(pcl::PointCloud<float>& inCloud, float tol, bool useCUDATree);

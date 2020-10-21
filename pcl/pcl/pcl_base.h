@@ -132,6 +132,9 @@ namespace pcl {
 	template<typename T>
 	using Normal = DVector<T>;
 
+	template<typename T>
+	using NormalCloud = std::vector<DVector<T>>;
+
 	struct Indices {
 		std::vector<int> indices;
 	};

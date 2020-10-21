@@ -36,3 +36,44 @@
 //
 //	return true;
 //}
+
+namespace pcl {
+	template<typename T>
+	pcl::PointXYZ<T> get3DCentroid(pcl::PointCloud<T>& inCloud, pcl::Indices &indices) {
+
+		pcl::PointXYZ<double> pt{ 0.0,0.0,0.0 };
+		pcl::PointXYZ<T> returnCentroid{ 0.0,0.0,0.0 };
+		pcl::PointXYZ<double> centroidDouble;	//Precision is lost with float when the sum of points is large
+		for (size_t idx = 0; idx < indices.indices.size(); idx++) {
+			pt.x = pt.x + inCloud[indices.indices[idx]].x;
+			pt.y = pt.y + inCloud[indices.indices[idx]].y;
+			pt.z = pt.z + inCloud[indices.indices[idx]].z;
+		}			
+		
+		centroidDouble = pt / indices.indices.size();
+		returnCentroid.x = centroidDouble.x;
+		returnCentroid.y = centroidDouble.y;
+		returnCentroid.z = centroidDouble.z;
+		return returnCentroid;
+	}
+
+	template<typename T>
+	pcl::PointXYZ<T> get3DCentroid(pcl::PointCloud<T>& inCloud) {
+
+		pcl::PointXYZ<double> pt{ 0.0,0.0,0.0 };
+		pcl::PointXYZ<T> returnCentroid{ 0.0,0.0,0.0 };
+		pcl::PointXYZ<double> centroidDouble;	//Precision is lost with float when the sum of points is large
+		for (size_t idx = 0; idx < inCloud.size(); idx++) {
+			pt.x = pt.x + inCloud[idx].x;
+			pt.y = pt.y + inCloud[idx].y;
+			pt.z = pt.z + inCloud[idx].z;
+		}
+
+		centroidDouble = pt / inCloud.size();
+		returnCentroid.x = centroidDouble.x;
+		returnCentroid.y = centroidDouble.y;
+		returnCentroid.z = centroidDouble.z;
+		return returnCentroid;
+	}
+}
+

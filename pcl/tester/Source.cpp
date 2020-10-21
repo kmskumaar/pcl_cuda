@@ -19,11 +19,26 @@
 #define NN_TEST		0
 #define STL_TEST	0
 #define CUDA_W_TEST 0
-#define EUCL_CLUSTER	1
+#define EUCL_CLUSTER	0
+#define CENTROID	0
+#define NORMAL	1
 
 int main() {
 
 	pcl::io::FileReader fileReader;
+
+	if (CENTROID) {
+		pcl::PointCloud<float> cld;
+		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/VB.txt";
+		fileReader.readASCIIFile(filePath, cld, " ");
+		pcl::Indices indices;
+		for (size_t i = 0; i < 10; i++)
+		{
+			indices.indices.push_back(i);
+		}
+		pcl::PointXYZ<float> centroid = pcl::get3DCentroid(cld, indices);
+		std::cout << centroid << std::endl;
+	}
 
 	if (NN_TEST) {		
 		pcl::PointCloud<float> cld;
@@ -115,8 +130,8 @@ int main() {
 		pcl::PointCloud<float> cld;
 		cld.clear();
 
-		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/HR_downsized.txt";
-		fileReader.readASCIIFile(filePath, cld, ",");
+		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
+		fileReader.readASCIIFile(filePath, cld, " ");
 
 		printf("Input Point Cloud Size: %d\n", cld.size());
 
@@ -132,6 +147,32 @@ int main() {
 		{
 			std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/cluster/cluster_" + std::to_string(i) + ".txt";
 			fileWriter.writeASCIIFile(filePath, cld, clusters[i]);
+		}
+	}
+
+	if (NORMAL) {
+		pcl::PointCloud<float> cld;
+		pcl::PointCloud<float> cld2;
+		cld.clear();
+
+		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
+		fileReader.readASCIIFile(filePath, cld, " ");
+
+		printf("Input Point Cloud Size: %d\n", cld.size());
+		pcl::Indices indices;
+		for (size_t i = 0; i < 100; i++)
+		{
+			cld2.push_back(cld[i]);
+			indices.indices.push_back(i);
+		}
+
+		pcl::PreProcess<float> ipreProcessCPU;
+
+		pcl::NormalCloud<float> normalCld;
+		ipreProcessCPU.normalEstimation(cld, normalCld, 10);
+		for (size_t i = 0; i < cld.size(); i++)
+		{
+			std::cout << i << ": " << normalCld[i] << std::endl;
 		}
 	}
 

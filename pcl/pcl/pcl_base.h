@@ -1,6 +1,12 @@
 #pragma once
+
+#define _USE_MATH_DEFINES
+
+#include <Eigen/Eigen>
 #include <vector>
 #include <iostream>
+#include <cmath>
+
 //#include <thrust/host_vector.h>
 //#include <thrust/device_vector.h>
 
@@ -106,6 +112,12 @@ namespace pcl {
 			result.j = (k * vec2.i) - (i * vec2.k);
 			result.k = (i * vec2.j) - (j * vec2.i);
 
+			return result;
+		}
+
+		T dot(DVector& vec2) {
+			T result;
+			result = i * vec2.i + j * vec2.j + k * vec2.k;
 			return result;
 		}
 	};

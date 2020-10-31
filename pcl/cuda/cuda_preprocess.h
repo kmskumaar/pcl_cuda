@@ -1,7 +1,8 @@
 #pragma once
-
+#include <thread>
 #include "cuda_common.h"
 #include "cuda_nn.h"
+#include <Eigen/SVD>
 #include "../pcl/pcl_common.h"
 
 namespace cuda {
@@ -19,6 +20,37 @@ namespace cuda {
 		[return] - Indices of the individual clusters
 		*/
 		pcl::Clusters euclideanClustering(pcl::PointCloud<T> &inCloud, const float clusterTolrence, const int max_nn = 100);
+
+		/*
+		Computes the normal vectors for individual points in the cloud. PCA is used to find the normal vectors
+		[in] inCloud - pointer to the input point cloud
+		[out] outNormal - pointer to the normal vectors
+		[in] neighbors - Number of NN to use for finding the normal
+		[in] threadsToUse - Number of threads to use. Default: maximum possible threads
+		*/
+		void normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const int neighbors, const short threadToUse = 0);
+
+		/*
+		Computes the normal vectors for individual points in the cloud. PCA is used to find the normal vectors
+		[in] inCloud - pointer to the input point cloud
+		[out] outNormal - pointer to the normal vectors
+		[in] radius - Radius for the NN search
+		[in] max_nn - Maximum number of neighbors
+		[in] threadsToUse - Number of threads to use. Default: maximum possible threads
+		*/
+		void normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const float radius, const int max_nn = 20, const short threadToUse = 0);
+
+		/*
+		Computes the normal vector for a point. PCA is used to find the normal vectors
+		[in] point - pointer to the point
+		[in] inCloud - pointer to the input Cloud
+		[in] indices - Indices of the nearest points that shall be used for computing the normal
+		[return] - Normal vector of the point
+		*/
+		pcl::Normal<T> computePointNormal(pcl::PointXYZ<T> &point, pcl::PointCloud<T> &inCloud, pcl::Indices indices);
+
+	private:
+		void normalEstimation_parallel(const int start, const int end, pcl::PointCloud<T> &inCloud, flann::Matrix<int> flannIndices, int max_nn, pcl::NormalCloud<T> &outNormal);
 	};
 
 }

@@ -26,6 +26,7 @@
 int main() {
 
 	pcl::io::FileReader fileReader;
+	pcl::io::FileWriter fileWriter;
 
 	if (CENTROID) {
 		pcl::PointCloud<float> cld;
@@ -141,7 +142,6 @@ int main() {
 		cuda::PreProcess<float> ipreProcessGPU;
 		pcl::Clusters clusters = ipreProcessGPU.euclideanClustering(cld, 2.0, 200);
 
-		pcl::io::FileWriter fileWriter;
 		printf("A total of %d clusters found\n", clusters.size());
 		for (size_t i = 0; i < clusters.size(); i++)
 		{
@@ -155,7 +155,7 @@ int main() {
 		pcl::PointCloud<float> cld2;
 		cld.clear();
 
-		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
+		std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
 		fileReader.readASCIIFile(filePath, cld, " ");
 
 		printf("Input Point Cloud Size: %d\n", cld.size());
@@ -167,20 +167,28 @@ int main() {
 		}
 
 		pcl::PreProcess<float> ipreProcessCPU;
+		cuda::PreProcess<float> ipreProcessGPU;
 
 		pcl::NormalCloud<float> normalCld;
 		auto t1 = std::chrono::steady_clock::now();
-		ipreProcessCPU.normalEstimation(cld2, normalCld, 10, 0);
+		//ipreProcessCPU.normalEstimation(cld2, normalCld, 10, (short)0);
+		ipreProcessGPU.normalEstimation(cld, normalCld, 10, (short)1);
 		auto t2 = std::chrono::steady_clock::now();
 
 		std::cout << "Operation Time : "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
 			<< " ms" << std::endl;
 
+		cld2.resize(normalCld.size());
 		for (size_t i = 0; i < cld2.size(); i++)
 		{
-			std::cout << i << ": " << normalCld[i] << std::endl;
+			cld2[i].x = normalCld[i].i;
+			cld2[i].y = normalCld[i].j;
+			cld2[i].z = normalCld[i].k;
 		}
+		pcl::Indices ind;
+		filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/normalscpp.txt";
+		fileWriter.writeASCIIFile(filePath, cld2, ind);
 	}
 
 	return 0;

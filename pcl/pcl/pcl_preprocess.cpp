@@ -55,7 +55,6 @@ pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inClou
 	return outCluster;
 }
 
-
 template <typename T>
 void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const int neighbors, const short threadToUse ) {
 	outNormal.resize(inCloud.size());
@@ -112,7 +111,7 @@ void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::Norm
 }
 
 template <typename T>
-void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::Normal<T> &outNormal, const float radius, const int max_nn, const short threadToUse) {
+void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const float radius, const int max_nn, const short threadToUse) {
 	outNormal.resize(inCloud.size());
 
 	// Setting the Kd- tree and querying all the points
@@ -195,6 +194,8 @@ void pcl::PreProcess<T>::normalEstimation_parallel(const int start, const int en
 template pcl::Clusters pcl::PreProcess<float>::euclideanClustering(pcl::PointCloud<float>& inCloud, const float tol, const int max_nn);
 
 template void pcl::PreProcess<float>::normalEstimation(pcl::PointCloud<float> &inCloud, pcl::NormalCloud<float> &outNormal, const int neighbors, const short threadToUse);
+
+template void pcl::PreProcess<float>::normalEstimation(pcl::PointCloud<float> &inCloud, pcl::NormalCloud<float> &outNormal, const float radius, const int max_nn, const short threadToUse);
 
 template pcl::Normal<float> pcl::PreProcess<float>::computePointNormal(pcl::PointXYZ<float> &point, pcl::PointCloud<float> &inCloud, pcl::Indices indices);
 

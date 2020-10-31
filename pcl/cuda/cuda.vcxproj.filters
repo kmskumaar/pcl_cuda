@@ -32,8 +32,10 @@
     <ClInclude Include="cuda_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cuda_base.h" />
     <ClInclude Include="cuda_preprocess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

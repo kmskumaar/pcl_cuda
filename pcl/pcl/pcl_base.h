@@ -5,7 +5,7 @@
 #include <Eigen/Eigen>
 #include <vector>
 #include <iostream>
-#include <cmath>
+#include <math.h>
 
 //#include <thrust/host_vector.h>
 //#include <thrust/device_vector.h>

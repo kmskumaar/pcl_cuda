@@ -123,19 +123,32 @@ void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::Norm
 	kdTreeCPU.buildIndex();
 	kdTreeCPU.knnSearchNPoints(inCloud, flannIndices, flannDists, radius, max_nn); //Radius search for all points
 
-	for (size_t idx = 0; idx < inCloud.size(); idx++)
-	{
-		pcl::Indices neighborIndices;
-		neighborIndices.indices.clear();
-		for (size_t n = 0; n < max_nn; n++) {
-			if (flannIndices[idx][n] >= 0)
-				neighborIndices.indices.push_back(flannIndices[idx][n]);
-			else
-				break;
+	if (threadToUse != 1) {
+		int nb_threads = threadToUse;
+		if (threadToUse == 0) {
+			nb_threads = std::thread::hardware_concurrency();
 		}
 
-		outNormal[idx] = computePointNormal(inCloud[idx], inCloud, neighborIndices);
+		int batch_size = inCloud.size() / nb_threads;
+		int batch_remainder = inCloud.size() % nb_threads;
+
+		std::vector< std::thread > my_threads(nb_threads);
+
+		for (int i = 0; i < nb_threads; ++i)
+		{
+			int start = i * batch_size;
+			my_threads[i] = std::thread(&pcl::PreProcess<T>::normalEstimation_parallel, this, start, (start + batch_size), std::ref(inCloud), std::ref(flannIndices), max_nn, std::ref(outNormal));
+		}
+
+		// Process the remainder separately
+		int start = nb_threads * batch_size;
+		this->normalEstimation_parallel(start, start + batch_remainder, inCloud, flannIndices, max_nn, outNormal);
+
+		std::for_each(my_threads.begin(), my_threads.end(), std::mem_fn(&std::thread::join));
 	}
+
+	else
+		this->normalEstimation_parallel(0, inCloud.size(), inCloud, flannIndices, max_nn, outNormal);
 }
 
 template <typename T>

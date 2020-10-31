@@ -160,7 +160,7 @@ int main() {
 
 		printf("Input Point Cloud Size: %d\n", cld.size());
 		pcl::Indices indices;
-		for (size_t i = 0; i < 100; i++)
+		for (size_t i = 0; i < 10000; i++)
 		{
 			cld2.push_back(cld[i]);
 			indices.indices.push_back(i);
@@ -169,8 +169,15 @@ int main() {
 		pcl::PreProcess<float> ipreProcessCPU;
 
 		pcl::NormalCloud<float> normalCld;
-		ipreProcessCPU.normalEstimation(cld, normalCld, 10);
-		for (size_t i = 0; i < cld.size(); i++)
+		auto t1 = std::chrono::steady_clock::now();
+		ipreProcessCPU.normalEstimation(cld2, normalCld, 10, 0);
+		auto t2 = std::chrono::steady_clock::now();
+
+		std::cout << "Operation Time : "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+			<< " ms" << std::endl;
+
+		for (size_t i = 0; i < cld2.size(); i++)
 		{
 			std::cout << i << ": " << normalCld[i] << std::endl;
 		}

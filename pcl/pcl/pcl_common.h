@@ -90,14 +90,14 @@ namespace pcl {
 
 
 	template<typename T>
-	pcl::PointCloud<T> demeanCloud(pcl::PointCloud<T>& inCloud) {
+	pcl::PointCloud<T> demeanCloud(pcl::PointCloud<T>& inCloud, pcl::PointXYZ<T>& outCentroid) {
 
 		pcl::PointCloud<T> outCloud;
 		outCloud.resize(inCloud.size());
-		pcl::PointXYZ<T> centroid = get3DCentroid<T>(inCloud);
+		outCentroid = get3DCentroid<T>(inCloud);
 
 		for (size_t idx = 0; idx < inCloud.size(); idx++)
-			outCloud[idx] = inCloud[idx] - centroid;
+			outCloud[idx] = inCloud[idx] - outCentroid;
 
 		return outCloud;
 	}
@@ -110,18 +110,17 @@ namespace pcl {
 	[return] pcl::PointXYZ - centroid for the points mentioned in the indices
 	*/
 	template<typename T>
-	pcl::PointCloud<T> demeanCloud(pcl::PointCloud<T>& inCloud, pcl::Indices indices, const bool useCldCentroid = false) {
+	pcl::PointCloud<T> demeanCloud(pcl::PointCloud<T>& inCloud, pcl::Indices indices, pcl::PointXYZ<T>& outCentroid, const bool useCldCentroid = false) {
 
 		pcl::PointCloud<T> outCloud;
 		outCloud.resize(indices.indices.size());
-		pcl::PointXYZ<T> centroid;
 		if (useCldCentroid)
-			centroid = get3DCentroid<T>(inCloud);
+			outCentroid = get3DCentroid<T>(inCloud);
 		else
-			centroid = get3DCentroid<T>(inCloud, indices);
+			outCentroid = get3DCentroid<T>(inCloud, indices);
 
 		for (size_t idx = 0; idx < indices.indices.size(); idx++)
-			outCloud[idx] = inCloud[indices.indices[idx]] - centroid;
+			outCloud[idx] = inCloud[indices.indices[idx]] - outCentroid;
 
 		return outCloud;
 	}
@@ -144,6 +143,70 @@ namespace pcl {
 		if (angle > M_PI_2 || angle < -M_PI_2)
 			normal = normal * (-1);
 	}
+
+	/*
+	Fit a plane to the given set of points
+	[in] inCloud - Pointer to the input cloud
+	[in] indices - Pointer to the indices
+	[return] pcl::Plane - Parameters of the plane 
+	*/
+	template<typename T>
+	pcl::Plane<T> fitPlane(pcl::PointCloud<T>& inCloud, pcl::Indices indices, T &rms) {
+
+		pcl::Normal<T> ptNormal{ 0.0,0.0,0.0 };
+		pcl::PointXYZ<T> centroid;
+		pcl::PointCloud<T> demeanCld;
+
+		pcl::Plane<T> outPlane = { 0.0,0.0,0.0,0.0 };
+		if ((indices.indices.size() != 0) && (indices.indices.size() < 3))
+			return outPlane;
+		if (indices.indices.size() == 0)
+			demeanCld = pcl::demeanCloud(inCloud, centroid);
+		else
+			demeanCld = pcl::demeanCloud(inCloud, indices, centroid, false);
+
+		Eigen::Matrix< T, Eigen::Dynamic, 3> matEig;
+		matEig.resize(demeanCld.size(), 3);
+		for (size_t idx = 0; idx < demeanCld.size(); idx++)
+		{
+			matEig(idx, 0) = demeanCld[idx].x;
+			matEig(idx, 1) = demeanCld[idx].y;
+			matEig(idx, 2) = demeanCld[idx].z;
+		}
+		Eigen::JacobiSVD<Eigen::MatrixXf> svd(matEig.transpose(), Eigen::ComputeThinU | Eigen::ComputeThinV);
+		Eigen::Matrix<T, 3, 1> ptNormalVec = svd.matrixU().col(2);
+		T variance = pow(svd.singularValues()(2, 0), 2);
+		ptNormal.i = ptNormalVec(0, 0);
+		ptNormal.j = ptNormalVec(1, 0);
+		ptNormal.k = ptNormalVec(2, 0);
+
+		pcl::flipNormalToViewPoint(centroid, { 0.0,0.0,0.0 }, ptNormal);
+
+		outPlane.A = ptNormal.i;
+		outPlane.B = ptNormal.j;
+		outPlane.C = ptNormal.k;
+		outPlane.D = (-1.0)*ptNormal.dot(*reinterpret_cast<pcl::Normal<T>*>(&centroid));
+		rms = 10.0;	// TODO rms calculation using the singular values
+		return outPlane;
+	}
+
+	/*
+	Fit a plane to the given set of points
+	[in] inCloud - Pointer to the input cloud
+	[return] pcl::Plane - Parameters of the plane
+	*/
+	template<typename T>
+	pcl::Plane<T> fitPlane(pcl::PointCloud<T>& inCloud, T &rms) {
+		pcl::Indices ind;
+		ind.indices.resize(0);	// Empty indices
+
+		return pcl::fitPlane(inCloud, ind, rms);
+	}
 	
+	template<typename T>
+	T distanceToPlane(pcl::Plane<T> planeParam, pcl::PointXYZ<T> point) {
+		pcl::Normal<T> planeNormal = (*reinterpret_cast<pcl::Normal<T>*>(&planeParam));
+		return (planeParam.D + planeNormal.dot(*reinterpret_cast<pcl::Normal<T>*>(&point)));
+	}
 }
 

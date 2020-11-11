@@ -98,7 +98,8 @@ template <typename T>
 pcl::Normal<T> cuda::PreProcess<T>::computePointNormal(pcl::PointXYZ<T> &point, pcl::PointCloud<T> &inCloud, pcl::Indices indices) {
 
 	pcl::Normal<T> ptNormal{ 0.0,0.0,0.0 };
-	pcl::PointCloud<T> demeanCld = pcl::demeanCloud(inCloud, indices, false);
+	pcl::PointXYZ<T> centroid;
+	pcl::PointCloud<T> demeanCld = pcl::demeanCloud(inCloud, indices, centroid, false);
 	Eigen::Matrix< T, Eigen::Dynamic, 3> matEig;
 	matEig.resize(demeanCld.size(), 3);
 	for (size_t idx = 0; idx < demeanCld.size(); idx++)
@@ -169,7 +170,7 @@ void cuda::PreProcess<T>::normalEstimation_parallel(const int start, const int e
 			else
 				break;
 		}
-			
+
 		outNormal[idx] = computePointNormal(inCloud[idx], inCloud, neighborIndices);
 	}
 }

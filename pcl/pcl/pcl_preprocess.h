@@ -22,6 +22,16 @@ namespace pcl {
 		pcl::Clusters euclideanClustering(pcl::PointCloud<T> &inCloud, const float clusterTolrence, const int max_nn = 100);
 
 		/*
+		Sorts the input point cloud into clusters that form a plane within the planarTolerance
+		[in] inCloud - pointer to the input point cloud
+		[in] planarTolerance - maximum distance between the point and the plane to include the point into the current cluster
+		[in] neighbors - Number of neighbors to choose in nn search. The same will be used to create a seed plane
+						 Higher values can affect the performance of the NN search
+		[return] - Indices of the individual clusters
+		*/
+		pcl::Clusters planarClustering(pcl::PointCloud<T> &inCloud, const T planarTolerance, const float radius, const int max_nn);
+
+		/*
 		Computes the normal vectors for individual points in the cloud. PCA is used to find the normal vectors
 		[in] inCloud - pointer to the input point cloud
 		[out] outNormal - pointer to the normal vectors

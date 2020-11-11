@@ -56,6 +56,79 @@ pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inClou
 }
 
 template <typename T>
+pcl::Clusters pcl::PreProcess<T>::planarClustering(pcl::PointCloud<T> &inCloud, const T planarTolerance, const float radius, const int max_nn) {
+	pcl::Clusters outCluster;
+	outCluster.clear();
+
+	std::vector<bool> flg;	// true if processed, false otherwise
+
+	flg.resize(inCloud.size());
+	std::fill(flg.begin(), flg.end(), false);	// Initializing the vector
+
+	// Setting the Kd- tree and querying all the points
+	flann::Matrix<float> flannDists;
+	flann::Matrix<int> flannIndices;
+	pcl::nn::KDTreeCPU<float> kdTreeCPU;
+	kdTreeCPU.setInputCloud(inCloud);
+	kdTreeCPU.buildIndex();
+	kdTreeCPU.knnSearchNPoints(inCloud, flannIndices, flannDists, radius, max_nn); //Radius search for all points
+
+	for (size_t idx = 0; idx < inCloud.size(); idx++)
+	{
+		if (flg[idx])
+			continue; 
+
+		pcl::Indices queue;
+		queue.indices.clear();		
+
+		pcl::Indices neighborIndices;
+		neighborIndices.indices.clear();
+
+		for (size_t n = 0; n < max_nn; n++) {
+			if (flannIndices[idx][n] >= 0) {
+				neighborIndices.indices.push_back(flannIndices[idx][n]);				
+				queue.indices.push_back(flannIndices[idx][n]);
+			}
+			else
+				break;
+		}
+
+		T rms = 0.0;
+		// Skipping if the number of points for plane fit is less than 3
+		if (neighborIndices.indices.size() < 3) {
+			pcl::Indices temp;
+			temp.indices.push_back(idx);
+			outCluster.push_back(temp);
+			continue;
+		}
+
+		pcl::Plane<T> seedPlane = pcl::fitPlane(inCloud, neighborIndices, rms);
+
+		int queueLength = queue.indices.size();
+
+		for (size_t s = 0; s < queueLength; s++)
+		{
+			for (size_t n = 0; n < max_nn; n++)
+			{
+				if ((flannIndices[queue.indices[s]][n] >= 0) && (!flg[flannIndices[queue.indices[s]][n]]))
+				{
+					if ((pcl::distanceToPlane(seedPlane, inCloud[flannIndices[queue.indices[s]][n]])) <= planarTolerance) {
+						queue.indices.push_back(flannIndices[queue.indices[s]][n]);
+						flg[flannIndices[queue.indices[s]][n]] = true;
+					}
+				}
+				else if (flannIndices[queue.indices[s]][n] < 0)
+					break;
+			}
+			queueLength = queue.indices.size();
+		}
+		outCluster.push_back(queue);
+		//queue.indices.clear();			// Clear the queue for the new seed point
+	}
+	return outCluster;
+}
+
+template <typename T>
 void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const int neighbors, const short threadToUse ) {
 	outNormal.resize(inCloud.size());
 
@@ -154,7 +227,8 @@ template <typename T>
 pcl::Normal<T> pcl::PreProcess<T>::computePointNormal(pcl::PointXYZ<T> &point, pcl::PointCloud<T> &inCloud, pcl::Indices indices) {
 
 	pcl::Normal<T> ptNormal{ 0.0,0.0,0.0 };
-	pcl::PointCloud<T> demeanCld = pcl::demeanCloud(inCloud, indices, false);
+	pcl::PointXYZ<T> centroid;
+	pcl::PointCloud<T> demeanCld = pcl::demeanCloud(inCloud, indices, centroid, false);
 	Eigen::Matrix< T, Eigen::Dynamic, 3> matEig;
 	matEig.resize(demeanCld.size(), 3);
 	for (size_t idx = 0; idx < demeanCld.size(); idx++)
@@ -192,6 +266,8 @@ void pcl::PreProcess<T>::normalEstimation_parallel(const int start, const int en
 }
 
 template pcl::Clusters pcl::PreProcess<float>::euclideanClustering(pcl::PointCloud<float>& inCloud, const float tol, const int max_nn);
+
+template pcl::Clusters pcl::PreProcess<float>::planarClustering(pcl::PointCloud<float> &inCloud, const float planarTolerance, const float radius, const int max_nn);
 
 template void pcl::PreProcess<float>::normalEstimation(pcl::PointCloud<float> &inCloud, pcl::NormalCloud<float> &outNormal, const int neighbors, const short threadToUse);
 

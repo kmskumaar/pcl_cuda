@@ -4,7 +4,8 @@ pcl::io::FileReader::FileReader() {
 
 }
 template<typename T>
-int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, pcl::PointCloud<T>& pointCloud, const char* delim /*= ","*/) {
+int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, pcl::PointCloud<T>& pointCloud, 
+	const char* delim /*= ","*/, const char* ignore/*= "//"*/) {
 	try {
 		this->inFileStream.open(cloudFile);
 
@@ -16,6 +17,9 @@ int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, pcl::PointCl
 
 		while (std::getline(inFileStream, line))
 		{
+			// Skip if the lines starting with the ignore keyword
+			if (line.find(ignore) == 0)
+				continue;				
 
 			if (line.find(delim) != std::string::npos) {
 				size_t pos = line.find(delim);
@@ -132,10 +136,10 @@ bool pcl::io::FileWriter::writeASCIIFile(const std::string filePath, pcl::PointC
 	return true;
 }
 
-template int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, PointCloud<float>& pointCloud, const char* delim /*= ","*/);
+template int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, PointCloud<float>& pointCloud, const char* delim /*= ","*/, const char* ignore/*= "//"*/);
 template bool pcl::io::FileReader::readSTLFile(const std::string stlFile, pcl::PolygonMesh<float>& mesh);
 
-template int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, PointCloud<double>& pointCloud, const char* delim /*= ","*/);
+template int pcl::io::FileReader::readASCIIFile(const std::string cloudFile, PointCloud<double>& pointCloud, const char* delim /*= ","*/, const char* ignore/*= "//"*/);
 template bool pcl::io::FileReader::readSTLFile(const std::string stlFile, pcl::PolygonMesh<double>& mesh);
 
 template bool pcl::io::FileWriter::writeASCIIFile(const std::string filePath, pcl::PointCloud<float>& cld, pcl::Indices& indices, const int precision, const char* delim, const bool append);

@@ -21,7 +21,7 @@ namespace pcl {
 			[in] delim - delimiter. DEFAULT = ","
 			*/
 			template<typename T>
-			int readASCIIFile(const std::string cloudFile, pcl::PointCloud<T>& pointCloud, const char* delim = ",");
+			int readASCIIFile(const std::string cloudFile, pcl::PointCloud<T>& pointCloud, const char* delim = ",", const char* ignore = "//");
 
 			/*
 			Reads the STL files

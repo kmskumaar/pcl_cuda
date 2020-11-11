@@ -19,6 +19,73 @@ pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inClou
 	kdTreeCPU.buildIndex();
 	kdTreeCPU.knnSearchNPoints(inCloud, flannIndices, flannDists, tol, max_nn); //Radius search for all points
 
+	// Cluster size will be equal to or greater than the number of cores/threads, since flg is shared
+	/*
+	concurrency::parallel_for(0, static_cast<int>(inCloud.size()), [&flannIndices, &inCloud, &outCluster, &flg, max_nn](int idx) {
+		// Skip already processed
+		if (!flg[idx]) {
+			pcl::PointXYZ<T> seedPt = inCloud[idx];
+			pcl::Indices queue;
+			queue.indices.resize(1);
+			queue.indices.at(0) = idx;
+
+			int queueLength = 1;
+			for (size_t s = 0; s < queueLength; s++)
+			{
+				pcl::PointXYZ<T> queryPt = inCloud.at(queue.indices.at(s));
+				//kdTreeCPU.knnSearch1Point(queryPt, indices, flannDists, tol, max_nn);
+
+				for (size_t i = 0; i < max_nn; i++)
+				{
+					if ((flannIndices[queue.indices[s]][i] >= 0) && (!flg[flannIndices[queue.indices[s]][i]]))
+					{
+						queue.indices.push_back(flannIndices[queue.indices[s]][i]);
+						flg[flannIndices[queue.indices[s]][i]] = true;
+					}
+					if (flannIndices[queue.indices[s]][i] < 0)
+						break;
+
+				}
+				queueLength = queue.indices.size();
+			}
+			outCluster.push_back(queue);
+			queue.indices.clear();			// Clear the queue for the new seed point
+		}		
+	});
+	*/
+	
+	// Queue is a shared resource. Locking it while writing will result in inefficient parallelization
+	/*for (size_t idx = 0; idx < inCloud.size(); idx++)
+	{
+
+		if (flg[idx])	// skip processed points
+			continue;
+
+		pcl::PointXYZ<T> seedPt = inCloud[idx];
+		pcl::Indices queue;
+		queue.indices.resize(1);
+		queue.indices.at(0) = idx;
+
+		int queueLength = 1;
+		for (size_t s = 0; s < queueLength; s++)
+		{
+			pcl::PointXYZ<T> queryPt = inCloud.at(queue.indices.at(s));
+			//kdTreeCPU.knnSearch1Point(queryPt, indices, flannDists, tol, max_nn);
+
+			concurrency::parallel_for(0, static_cast<int>(max_nn), [&flannIndices, &flg, &queue, &s](int i) {
+				if ((flannIndices[queue.indices[s]][i] >= 0) && (!flg[flannIndices[queue.indices[s]][i]]))
+				{
+					//printf("S: %d\t I: %d\n", s, i);
+					queue.indices.push_back(flannIndices[queue.indices[s]][i]);
+					flg[flannIndices[queue.indices[s]][i]] = true;
+				}
+			});
+			queueLength = queue.indices.size();
+		}
+		outCluster.push_back(queue);	
+		queue.indices.clear();			// Clear the queue for the new seed point
+	}*/
+
 	for (size_t idx = 0; idx < inCloud.size(); idx++)
 	{
 
@@ -52,6 +119,7 @@ pcl::Clusters pcl::PreProcess<T>::euclideanClustering(pcl::PointCloud<T>& inClou
 		outCluster.push_back(queue);	
 		queue.indices.clear();			// Clear the queue for the new seed point
 	}
+
 	return outCluster;
 }
 

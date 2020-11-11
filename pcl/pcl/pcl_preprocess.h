@@ -1,6 +1,7 @@
 #pragma once
 
 #include <thread>
+#include <ppl.h>
 #include "pcl_common.h"
 #include "pcl_nn.h"
 #include <Eigen/SVD>

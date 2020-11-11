@@ -98,7 +98,7 @@ namespace pcl {
 			return newVec;
 		}
 
-		T norm2() {		
+		T norm2() {
 			return (sqrt(i * i + j * j + k * k));
 		}
 
@@ -123,6 +123,14 @@ namespace pcl {
 	};
 
 	template<typename T>
+	struct Plane {
+		T A;
+		T B;
+		T C;
+		T D;
+	};
+
+	template<typename T>
 	std::ostream& operator << (std::ostream& os, const PointXYZ<T>& pt) {
 		os << "X: " << pt.x << "\tY: " << pt.y << "\tZ: " << pt.z;
 		return os;
@@ -131,6 +139,12 @@ namespace pcl {
 	template<typename T>
 	std::ostream& operator << (std::ostream& os, const DVector<T>& vec) {
 		os << "I: " << vec.i << "\tJ: " << vec.j << "\tK: " << vec.k;
+		return os;
+	}
+
+	template<typename T>
+	std::ostream& operator << (std::ostream& os, const Plane<T>& planeParam) {
+		os << "A: " << planeParam.A << "\tB: " << planeParam.B << "\tC: " << planeParam.C << "\tD: " << planeParam.D;
 		return os;
 	}
 

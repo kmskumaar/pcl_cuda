@@ -21,17 +21,21 @@
 #define CUDA_W_TEST 0
 #define EUCL_CLUSTER	0
 #define CENTROID	0
-#define NORMAL	1
+#define NORMAL	0
+#define PLANE	1
 
 int main() {
 
 	pcl::io::FileReader fileReader;
 	pcl::io::FileWriter fileWriter;
 
+	pcl::PointCloud<float> cld;
+	cld.clear();
+
+	std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
+	fileReader.readASCIIFile(filePath, cld, " ");
+
 	if (CENTROID) {
-		pcl::PointCloud<float> cld;
-		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/VB.txt";
-		fileReader.readASCIIFile(filePath, cld, " ");
 		pcl::Indices indices;
 		for (size_t i = 0; i < 10; i++)
 		{
@@ -42,13 +46,7 @@ int main() {
 	}
 
 	if (NN_TEST) {		
-		pcl::PointCloud<float> cld;
 		pcl::PointCloud<float> query;
-		cld.clear();
-
-		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/HR_downsized.txt";
-		std::ofstream outFile;
-		outFile.open("C:/Users/R/OneDrive - Fraunhofer/private/MATLAB_ws/outputCUDA_library.txt");
 
 		fileReader.readASCIIFile(filePath, cld, ",");
 		query.resize(100000);
@@ -128,11 +126,6 @@ int main() {
 	}
 
 	if (EUCL_CLUSTER) {
-		pcl::PointCloud<float> cld;
-		cld.clear();
-
-		const std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
-		fileReader.readASCIIFile(filePath, cld, " ");
 
 		printf("Input Point Cloud Size: %d\n", cld.size());
 
@@ -151,16 +144,11 @@ int main() {
 	}
 
 	if (NORMAL) {
-		pcl::PointCloud<float> cld;
 		pcl::PointCloud<float> cld2;
-		cld.clear();
-
-		std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
-		fileReader.readASCIIFile(filePath, cld, " ");
 
 		printf("Input Point Cloud Size: %d\n", cld.size());
 		pcl::Indices indices;
-		for (size_t i = 0; i < 10000; i++)
+		for (size_t i = 0; i < 100000; i++)
 		{
 			cld2.push_back(cld[i]);
 			indices.indices.push_back(i);
@@ -189,6 +177,40 @@ int main() {
 		pcl::Indices ind;
 		filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/normalscpp.txt";
 		fileWriter.writeASCIIFile(filePath, cld2, ind);
+	}
+
+	if (PLANE) {
+		pcl::PointCloud<float> cld2;
+
+		printf("Input Point Cloud Size: %d\n", cld.size());
+		pcl::Indices indices;
+		for (size_t i = 0; i < 100; i++)
+		{
+			cld2.push_back(cld[i]);
+			indices.indices.push_back(i);
+		}
+
+		pcl::PreProcess<float> ipreProcessCPU;
+		cuda::PreProcess<float> ipreProcessGPU;
+
+		float rms = 0.0;
+		auto t1 = std::chrono::steady_clock::now();
+		//pcl::Clusters clusters = ipreProcessCPU.planarClustering(cld, 0.2, 2.0, 200);
+		pcl::Plane<float> planeParam = pcl::fitPlane(cld, indices, rms);
+		//float distance = pcl::distanceToPlane(planeParam, { 9782.87,-1315.33,1434.60 });
+		auto t2 = std::chrono::steady_clock::now();
+
+		std::cout << "Operation Time : "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+			<< " ms" << std::endl;
+
+		/*printf("A total of %d clusters found\n", clusters.size());
+		for (size_t i = 0; i < clusters.size(); i++)
+		{
+			std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/cluster/cluster_" + std::to_string(i) + ".txt";
+			fileWriter.writeASCIIFile(filePath, cld, clusters[i]);
+		}*/
+
 	}
 
 	return 0;

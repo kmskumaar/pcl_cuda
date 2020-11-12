@@ -19,10 +19,10 @@
 #define NN_TEST		0
 #define STL_TEST	0
 #define CUDA_W_TEST 0
-#define EUCL_CLUSTER	0
+#define EUCL_CLUSTER	1
 #define CENTROID	0
 #define NORMAL	0
-#define PLANE	1
+#define PLANE	0
 
 int main() {
 
@@ -32,8 +32,8 @@ int main() {
 	pcl::PointCloud<float> cld;
 	cld.clear();
 
-	std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/L_Top.txt";
-	fileReader.readASCIIFile(filePath, cld, " ");
+	std::string filePath = "C:/Users/R/OneDrive - Fraunhofer/private/testFiles/euclideanClusterTestData_Sphere.txt";
+	fileReader.readASCIIFile(filePath, cld, ",");
 
 	if (CENTROID) {
 		pcl::Indices indices;
@@ -128,12 +128,24 @@ int main() {
 	if (EUCL_CLUSTER) {
 
 		printf("Input Point Cloud Size: %d\n", cld.size());
+		pcl::PointCloud<float> cld2;
+		pcl::Indices indices;
+		for (size_t i = 0; i < 100; i++)
+		{
+			cld2.push_back(cld[i]);
+			indices.indices.push_back(i);
+		}
+		pcl::PreProcess<float> ipreProcessCPU;
+		auto t1 = std::chrono::steady_clock::now();
+		pcl::Clusters clusters = ipreProcessCPU.euclideanClustering(cld, 0.5,200);
+		auto t2 = std::chrono::steady_clock::now();
 
-		/*pcl::PreProcess<float> ipreProcessCPU;
-		pcl::Clusters clusters = ipreProcessCPU.euclideanClustering(cld, 3.0);*/
+		//std::cout << "Operation Time : "
+		//	<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+		//	<< " ms" << std::endl;
 
-		cuda::PreProcess<float> ipreProcessGPU;
-		pcl::Clusters clusters = ipreProcessGPU.euclideanClustering(cld, 2.0, 200);
+		//cuda::PreProcess<float> ipreProcessGPU;
+		//pcl::Clusters clusters = ipreProcessGPU.euclideanClustering(cld, 2.0, 200);
 
 		printf("A total of %d clusters found\n", clusters.size());
 		for (size_t i = 0; i < clusters.size(); i++)
@@ -213,5 +225,6 @@ int main() {
 
 	}
 
+	system("PAUSE");
 	return 0;
 }

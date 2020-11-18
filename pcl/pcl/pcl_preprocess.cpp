@@ -197,7 +197,7 @@ pcl::Clusters pcl::PreProcess<T>::planarClustering(pcl::PointCloud<T> &inCloud, 
 }
 
 template <typename T>
-void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const int neighbors, const short threadToUse ) {
+void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const int neighbors/*, const short threadToUse */) {
 	outNormal.resize(inCloud.size());
 
 	// Setting the Kd- tree and querying all the points
@@ -208,32 +208,45 @@ void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::Norm
 	kdTreeCPU.buildIndex();
 	kdTreeCPU.knnSearchNPoints(inCloud, flannIndices, flannDists, neighbors); //NN search for all points
 
-	if (threadToUse != 1) {
-		int nb_threads = threadToUse;
-		if (threadToUse == 0) {
-			nb_threads = std::thread::hardware_concurrency();
-		}
-		
-		int batch_size = inCloud.size() / nb_threads;
-		int batch_remainder = inCloud.size() % nb_threads;
-
-		std::vector< std::thread > my_threads(nb_threads);
-
-		for (int i = 0; i < nb_threads; ++i)
-		{
-			int start = i * batch_size;
-			my_threads[i] = std::thread(&pcl::PreProcess<T>::normalEstimation_parallel, this, start, (start + batch_size), std::ref(inCloud), std::ref(flannIndices), neighbors, std::ref(outNormal));
+	concurrency::parallel_for(0, static_cast<int>(inCloud.size()), [&flannIndices, &inCloud, &outNormal, neighbors, this](int idx) {
+		pcl::Indices neighborIndices;
+		neighborIndices.indices.clear();
+		for (size_t n = 0; n < neighbors; n++) {
+			if (flannIndices[idx][n] >= 0)
+				neighborIndices.indices.push_back(flannIndices[idx][n]);
+			else
+				break;
 		}
 
-		// Process the remainder separately
-		int start = nb_threads * batch_size;
-		this->normalEstimation_parallel(start, start + batch_remainder, inCloud, flannIndices, neighbors, outNormal);
+		outNormal[idx] = this->computePointNormal(inCloud[idx], inCloud, neighborIndices);
+	});
 
-		std::for_each(my_threads.begin(), my_threads.end(), std::mem_fn(&std::thread::join));
-	}
+	//if (threadToUse != 1) {
+	//	int nb_threads = threadToUse;
+	//	if (threadToUse == 0) {
+	//		nb_threads = std::thread::hardware_concurrency();
+	//	}
+	//	
+	//	int batch_size = inCloud.size() / nb_threads;
+	//	int batch_remainder = inCloud.size() % nb_threads;
 
-	else
-		this->normalEstimation_parallel(0, inCloud.size(), inCloud, flannIndices, neighbors, outNormal);
+	//	std::vector< std::thread > my_threads(nb_threads);
+
+	//	for (int i = 0; i < nb_threads; ++i)
+	//	{
+	//		int start = i * batch_size;
+	//		my_threads[i] = std::thread(&pcl::PreProcess<T>::normalEstimation_parallel, this, start, (start + batch_size), std::ref(inCloud), std::ref(flannIndices), neighbors, std::ref(outNormal));
+	//	}
+
+	//	// Process the remainder separately
+	//	int start = nb_threads * batch_size;
+	//	this->normalEstimation_parallel(start, start + batch_remainder, inCloud, flannIndices, neighbors, outNormal);
+
+	//	std::for_each(my_threads.begin(), my_threads.end(), std::mem_fn(&std::thread::join));
+	//}
+
+	//else
+	//	this->normalEstimation_parallel(0, inCloud.size(), inCloud, flannIndices, neighbors, outNormal);
 
 	//for (size_t idx = 0; idx < inCloud.size(); idx++)
 	//{
@@ -252,7 +265,7 @@ void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::Norm
 }
 
 template <typename T>
-void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const float radius, const int max_nn, const short threadToUse) {
+void pcl::PreProcess<T>::normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const float radius, const int max_nn/*, const short threadToUse*/) {
 	outNormal.resize(inCloud.size());
 
 	// Setting the Kd- tree and querying all the points
@@ -348,7 +361,7 @@ pcl::Normal<T> pcl::PreProcess<T>::computePointNormal(pcl::PointXYZ<T> &point, p
 
 template pcl::Clusters pcl::PreProcess<float>::euclideanClustering(pcl::PointCloud<float>& inCloud, const float tol, const int max_nn);
 template pcl::Clusters pcl::PreProcess<float>::planarClustering(pcl::PointCloud<float> &inCloud, const float planarTolerance, const float radius, const int max_nn);
-template void pcl::PreProcess<float>::normalEstimation(pcl::PointCloud<float> &inCloud, pcl::NormalCloud<float> &outNormal, const int neighbors, const short threadToUse);
-template void pcl::PreProcess<float>::normalEstimation(pcl::PointCloud<float> &inCloud, pcl::NormalCloud<float> &outNormal, const float radius, const int max_nn, const short threadToUse);
+template void pcl::PreProcess<float>::normalEstimation(pcl::PointCloud<float> &inCloud, pcl::NormalCloud<float> &outNormal, const int neighbors/*, const short threadToUse*/);
+template void pcl::PreProcess<float>::normalEstimation(pcl::PointCloud<float> &inCloud, pcl::NormalCloud<float> &outNormal, const float radius, const int max_nn/*, const short threadToUse*/);
 template pcl::Normal<float> pcl::PreProcess<float>::computePointNormal(pcl::PointXYZ<float> &point, pcl::PointCloud<float> &inCloud, pcl::Indices indices);
 //template void pcl::PreProcess<float>::normalEstimation_parallel(const int start, const int end, pcl::PointCloud<float> &inCloud, flann::Matrix<int> flannIndices, int max_nn, pcl::NormalCloud<float> &outNormal);

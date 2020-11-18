@@ -39,7 +39,7 @@ namespace pcl {
 		[in] neighbors - Number of NN to use for finding the normal
 		[in] threadsToUse - Number of threads to use. Default: maximum possible threads
 		*/
-		void normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const int neighbors, const short threadToUse = 0);
+		void normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const int neighbors/*, const short threadToUse = 0*/);
 
 		/*
 		Computes the normal vectors for individual points in the cloud. PCA is used to find the normal vectors
@@ -49,7 +49,7 @@ namespace pcl {
 		[in] max_nn - Maximum number of neighbors
 		[in] threadsToUse - Number of threads to use. Default: maximum possible threads
 		*/
-		void normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const float radius, const int max_nn = 20, const short threadToUse = 0);
+		void normalEstimation(pcl::PointCloud<T> &inCloud, pcl::NormalCloud<T> &outNormal, const float radius, const int max_nn = 20/*, const short threadToUse = 0*/);
 
 		/*
 		Computes the normal vector for a point. PCA is used to find the normal vectors

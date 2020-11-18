@@ -21,7 +21,7 @@ void pcl::nn::KDTreeCPU<T_CPU>::setInputCloud(pcl::PointCloud<T_CPU>& inCloud) {
 		this->cloudMatrix[i][2] = inCloud.at(i).z;
 
 	}
-	this->kdIndex = new flann::Index<flann::L2<T_CPU>>(this->cloudMatrix, flann::KDTreeIndexParams(4));
+	this->kdIndex = new flann::Index<flann::L2<T_CPU>>(this->cloudMatrix, flann::KDTreeSingleIndexParams(2));
 }
 
 template <typename T_CPU>

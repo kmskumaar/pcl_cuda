@@ -61,7 +61,7 @@ namespace pcl {
 		pcl::Normal<T> computePointNormal(pcl::PointXYZ<T> &point, pcl::PointCloud<T> &inCloud, pcl::Indices indices);
 
 	private:
-		void normalEstimation_parallel(const int start, const int end, pcl::PointCloud<T> &inCloud, flann::Matrix<int> flannIndices, int max_nn, pcl::NormalCloud<T> &outNormal);
+		//void normalEstimation_parallel(const int start, const int end, pcl::PointCloud<T> &inCloud, flann::Matrix<int> flannIndices, int max_nn, pcl::NormalCloud<T> &outNormal);
 	};
 
 }

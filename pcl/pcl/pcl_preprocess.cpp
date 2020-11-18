@@ -179,8 +179,8 @@ pcl::Clusters pcl::PreProcess<T>::planarClustering(pcl::PointCloud<T> &inCloud, 
 			for (size_t n = 0; n < max_nn; n++)
 			{
 				if ((flannIndices[queue.indices[s]][n] >= 0) && (!flg[flannIndices[queue.indices[s]][n]]))
-				{
-					if ((pcl::distanceToPlane(seedPlane, inCloud[flannIndices[queue.indices[s]][n]])) <= planarTolerance) {
+				{	
+					if (abs(pcl::distanceToPlane(seedPlane, inCloud[flannIndices[queue.indices[s]][n]])) <= planarTolerance) {
 						queue.indices.push_back(flannIndices[queue.indices[s]][n]);
 						flg[flannIndices[queue.indices[s]][n]] = true;
 					}

@@ -13,6 +13,15 @@
 
 namespace pcl {
 
+	template<typename T>
+	using TMatrix = Eigen::Transform<T, 3, Eigen::Affine>;
+
+	template<typename T>
+	using EigenPoint = Eigen::Matrix<T, 4, 1>;
+
+	template<typename T>
+	using EigenCloud = Eigen::Matrix<T, Eigen::Dynamic, 3>;
+
 	/*
 	Data types for storing 3D points. Allowable templates: <float> and <double>
 	*/
@@ -53,6 +62,22 @@ namespace pcl {
 			newPt.z = z / scalar;
 			return newPt;
 		}
+
+		EigenPoint<T> convert2Eigen() {
+			EigenPoint<T> eigenPt;
+			eigenPt[0] = this->x;
+			eigenPt[1] = this->y;
+			eigenPt[2] = this->z;
+			eigenPt[3] = 1.0;
+
+			return eigenPt;
+		}
+
+		PointXYZ transform(TMatrix<T> t) {
+			EigenPoint<T> transformedPt = t* this->convert2Eigen();
+			return PointXYZ{ transformedPt[0],transformedPt[1],transformedPt[2] };
+		}
+
 	};
 
 	/*
@@ -128,6 +153,26 @@ namespace pcl {
 		T B;
 		T C;
 		T D;
+	};
+
+	template<typename T>
+	struct TVector {
+		T tx; T ty; T tz;
+		T rx; T ry; T rz;
+
+		TMatrix<T> getTMatrix() {
+			T COS_X = cos(this->rx);	T SIN_X = sin(this->rx);
+			T COS_Y = cos(this->ry);	T SIN_Y = sin(this->ry);
+			T COS_Z = cos(this->rz);	T SIN_Z = sin(this->rz);
+
+			TMatrix<T> t;
+			t(0, 0) = COS_Y * COS_Z;							t(0, 1) = -COS_Y * SIN_Z;							t(0, 2) = SIN_Y;				t(0, 3) = this->tx;
+			t(1, 0) = COS_X * SIN_Z + SIN_X * SIN_Y*COS_Z;		t(1, 1) = COS_X * COS_Z - SIN_X * SIN_Y*SIN_Z;		t(1, 2) = -SIN_X * COS_Y;		t(1, 3) = this->ty;
+			t(2, 0) = SIN_X * SIN_Z - COS_X * SIN_Y*COS_Z;		t(2, 1) = COS_X * SIN_Y*SIN_Z + SIN_X * COS_Z;		t(2, 2) = COS_X * COS_Y;		t(2, 3) = this->tz;
+			t(3, 0) = 0.0;										t(3, 1) = 0.0;										t(3, 2) = 0.0;					t(3, 3) = 1.0;
+
+			return t;
+		}
 	};
 
 	template<typename T>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pcl_base.h"
+#include <ppl.h>
 //#include <thrust/host_vector.h>
 //#include <vector_functions.hpp>
 //
@@ -96,8 +97,11 @@ namespace pcl {
 		outCloud.resize(inCloud.size());
 		outCentroid = get3DCentroid<T>(inCloud);
 
-		for (size_t idx = 0; idx < inCloud.size(); idx++)
+		concurrency::parallel_for(0, static_cast<int>(inCloud.size()), [&inCloud, &outCloud, outCentroid](int idx) {
 			outCloud[idx] = inCloud[idx] - outCentroid;
+		});
+		//for (size_t idx = 0; idx < inCloud.size(); idx++)
+		//	outCloud[idx] = inCloud[idx] - outCentroid;
 
 		return outCloud;
 	}
@@ -203,10 +207,55 @@ namespace pcl {
 		return pcl::fitPlane(inCloud, ind, rms);
 	}
 	
+	/*
+	Compute the distance between a point and a plane
+	[in] planeParam - Plane Parameters
+	[in] point - point
+	[return] T - distance 
+	*/
 	template<typename T>
 	T distanceToPlane(pcl::Plane<T> planeParam, pcl::PointXYZ<T> point) {
 		pcl::Normal<T> planeNormal = (*reinterpret_cast<pcl::Normal<T>*>(&planeParam));
 		return (planeParam.D + planeNormal.dot(*reinterpret_cast<pcl::Normal<T>*>(&point)));
+	}
+
+	//template<typename T>
+	//void transformPointCloud(pcl::PointCloud<T>& cld, pcl::TMatrix<T> tMatrix) {
+	//	concurrency::parallel_for(0, static_cast<int>(cld.size()), [&cld, tMatrix](int idx) {
+	//		cld[idx].transform();
+	//	});
+	//}
+
+	/*
+	Convert point cloud to an Eigen Matrix
+	[in] inCloud - Pointer to the point cloud	
+	[return] Eigen::Matrix - eigen matrix
+	*/
+	template<typename T>
+	Eigen::Matrix<T, Eigen::Dynamic, 3> cloudToEigenMatrix(pcl::PointCloud<T>& inCloud) {
+		Eigen::Matrix<T, Eigen::Dynamic, 3> eigenMatrix;
+		eigenMatrix.resize(inCloud.size(), 3);
+		concurrency::parallel_for(0, static_cast<int>(inCloud.size()), [&inCloud, &eigenMatrix](int idx) {
+			eigenMatrix(idx, 0) = inCloud[idx].x;
+			eigenMatrix(idx, 1) = inCloud[idx].y;
+			eigenMatrix(idx, 2) = inCloud[idx].z;
+		});
+		return eigenMatrix;
+	}
+
+	/*
+	Transform point cloud
+	[in] inCloud - Pointer to the point cloud
+	[in] tMatrix - Transformation Matrix
+	[return] - transformed point cloud
+	*/
+	template<typename T>
+	pcl::PointCloud<T> transformPointCloud(pcl::PointCloud<T>& inCloud, pcl::TMatrix<T> tMatrix) {
+		pcl::PointCloud<T> outCloud(inCloud.size());
+		concurrency::parallel_for(0, static_cast<int>(inCloud.size()), [&inCloud, tMatrix](int idx) {
+			outCloud[idx] = inCloud[idx].transform(tMatrix);
+		});
+		return outCloud;
 	}
 }
 

@@ -33,6 +33,9 @@
     <ClInclude Include="pcl_preprocess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pcl_registration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pcl_file_reader.cpp">
@@ -42,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pcl_preprocess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcl_registration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

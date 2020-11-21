@@ -77,10 +77,10 @@ bool pcl::io::FileReader::readSTLFile(const std::string stlFile, pcl::PolygonMes
 		for (size_t i = 0; i < noOfPolygons; i++)
 		{
 			// Copying the index for the vertices of the polygons
-			vertices.resize(3);
-			vertices.at(0) = verticesArray[(i * 3) + 0];
-			vertices.at(1) = verticesArray[(i * 3) + 1];
-			vertices.at(2) = verticesArray[(i * 3) + 2];
+			vertices.indices.resize(3);
+			vertices.indices[0] = verticesArray[(i * 3) + 0];
+			vertices.indices[1] = verticesArray[(i * 3) + 1];
+			vertices.indices[2] = verticesArray[(i * 3) + 2];
 			mesh.polygon.at(i) = vertices;
 
 			// Copying the normalized normal vector of each polygons

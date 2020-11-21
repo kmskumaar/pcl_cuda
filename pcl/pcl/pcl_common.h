@@ -164,6 +164,34 @@ namespace pcl {
 		pcl::Plane<T> outPlane = { 0.0,0.0,0.0,0.0 };
 		if ((indices.indices.size() != 0) && (indices.indices.size() < 3))
 			return outPlane;
+
+		// Since only three points are present, the plane can be computed without using PCA
+		if (indices.indices.size() == 3 || inCloud.size() == 3) {
+			pcl::DVector<T> planeNormal;
+			if (indices.indices.size() == 0) {
+				pcl::DVector<T> vec1 = reinterpret_cast<pcl::DVector<T>&>(inCloud[1] - inCloud[0]);
+				pcl::DVector<T> vec2 = reinterpret_cast<pcl::DVector<T>&>(inCloud[2] - inCloud[0]);
+
+				planeNormal = vec1.cross(vec2);
+				outPlane.A = planeNormal.i;
+				outPlane.B = planeNormal.j;
+				outPlane.C = planeNormal.k;
+				outPlane.D = (-1.0)*planeNormal.dot(reinterpret_cast<pcl::Normal<T>&>(inCloud[0]));
+			}
+			else {
+				pcl::DVector<T> vec1 = reinterpret_cast<pcl::DVector<T>&>(inCloud[indices.indices[1]] - inCloud[indices.indices[0]]);
+				pcl::DVector<T> vec2 = reinterpret_cast<pcl::DVector<T>&>(inCloud[indices.indices[2]] - inCloud[indices.indices[0]]);
+
+				planeNormal = vec1.cross(vec2);
+				planeNormal = planeNormal.normalize();
+				outPlane.A = planeNormal.i;
+				outPlane.B = planeNormal.j;
+				outPlane.C = planeNormal.k;
+				outPlane.D = (-1.0)*planeNormal.dot(reinterpret_cast<pcl::Normal<T>&>(inCloud[indices.indices[0]]));
+			}
+			return outPlane;
+		}
+
 		if (indices.indices.size() == 0)
 			demeanCld = pcl::demeanCloud(inCloud, centroid);
 		else

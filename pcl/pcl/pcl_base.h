@@ -212,7 +212,8 @@ namespace pcl {
 
 	typedef std::vector<Indices> Clusters;
 
-	typedef std::vector<int> Vertices;
+	//typedef std::vector<int> Vertices;
+	using Vertices = Indices;
 
 
 	/*
@@ -222,7 +223,7 @@ namespace pcl {
 	struct PolygonMesh {
 		pcl::PointCloud<T> cloud;
 
-		std::vector<Vertices> polygon;
+		std::vector<pcl::Indices> polygon;
 
 		std::vector<pcl::Normal<T>> normals;
 

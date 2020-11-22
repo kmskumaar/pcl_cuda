@@ -23,64 +23,6 @@ namespace pcl {
 	using EigenCloud = Eigen::Matrix<T, Eigen::Dynamic, 3>;
 
 	/*
-	Data types for storing 3D points. Allowable templates: <float> and <double>
-	*/
-	template<typename T>
-	struct PointXYZ {
-		T x;
-		T y;
-		T z;
-
-		PointXYZ operator + (PointXYZ const &pt2) {
-			PointXYZ newPt;
-			newPt.x = x + pt2.x;
-			newPt.y = y + pt2.y;
-			newPt.z = z + pt2.z;
-			return newPt;
-		}
-
-		PointXYZ operator - (PointXYZ const &pt2) {
-			PointXYZ newPt;
-			newPt.x = x - pt2.x;
-			newPt.y = y - pt2.y;
-			newPt.z = z - pt2.z;
-			return newPt;
-		}
-
-		PointXYZ operator * (T const &scalar) {
-			PointXYZ newPt;
-			newPt.x = x * scalar;
-			newPt.y = y * scalar;
-			newPt.z = z * scalar;
-			return newPt;
-		}
-
-		PointXYZ operator / (T const &scalar) {
-			PointXYZ newPt;
-			newPt.x = x / scalar;
-			newPt.y = y / scalar;
-			newPt.z = z / scalar;
-			return newPt;
-		}
-
-		EigenPoint<T> convert2Eigen() {
-			EigenPoint<T> eigenPt;
-			eigenPt[0] = this->x;
-			eigenPt[1] = this->y;
-			eigenPt[2] = this->z;
-			eigenPt[3] = 1.0;
-
-			return eigenPt;
-		}
-
-		PointXYZ transform(TMatrix<T> t) {
-			EigenPoint<T> transformedPt = t* this->convert2Eigen();
-			return PointXYZ{ transformedPt[0],transformedPt[1],transformedPt[2] };
-		}
-
-	};
-
-	/*
 	Datatype for holding vectors. Allowable templates: <float> and <double>
 	*/
 	template<typename T>
@@ -145,15 +87,94 @@ namespace pcl {
 			result = i * vec2.i + j * vec2.j + k * vec2.k;
 			return result;
 		}
+
+		T angle(DVector& vec2) {
+			T alpha = this->dot(vec2) / (this->norm2()*vec2.norm2());
+			if (alpha < -1.0)
+				alpha = -1.0;
+			else if (alpha > 1.0)
+				alpha = 1.0;
+			return acos(alpha);
+		}
 	};
 
 	template<typename T>
+	using Normal = DVector<T>;
+
+	template<typename T>
 	struct Plane {
-		T A;
-		T B;
-		T C;
+		pcl::Normal<T> normal;
 		T D;
 	};
+
+	/*
+	Data types for storing 3D points. Allowable templates: <float> and <double>
+	*/
+	template<typename T>
+	struct PointXYZ {
+		T x;
+		T y;
+		T z;
+
+		PointXYZ operator + (PointXYZ const &pt2) {
+			PointXYZ newPt;
+			newPt.x = x + pt2.x;
+			newPt.y = y + pt2.y;
+			newPt.z = z + pt2.z;
+			return newPt;
+		}
+
+		PointXYZ operator - (PointXYZ const &pt2) {
+			PointXYZ newPt;
+			newPt.x = x - pt2.x;
+			newPt.y = y - pt2.y;
+			newPt.z = z - pt2.z;
+			return newPt;
+		}
+
+		PointXYZ operator * (T const &scalar) {
+			PointXYZ newPt;
+			newPt.x = x * scalar;
+			newPt.y = y * scalar;
+			newPt.z = z * scalar;
+			return newPt;
+		}
+
+		PointXYZ operator / (T const &scalar) {
+			PointXYZ newPt;
+			newPt.x = x / scalar;
+			newPt.y = y / scalar;
+			newPt.z = z / scalar;
+			return newPt;
+		}
+
+		EigenPoint<T> convert2Eigen() {
+			EigenPoint<T> eigenPt;
+			eigenPt[0] = this->x;
+			eigenPt[1] = this->y;
+			eigenPt[2] = this->z;
+			eigenPt[3] = 1.0;
+
+			return eigenPt;
+		}
+
+		PointXYZ transform(TMatrix<T> t) {
+			EigenPoint<T> transformedPt = t* this->convert2Eigen();
+			return PointXYZ{ transformedPt[0],transformedPt[1],transformedPt[2] };
+		}
+
+		T distance2Plane(Plane<T> plane) {
+			return (plane.D + plane.normal.dot(*reinterpret_cast<pcl::Normal<T>*>(this))) / plane.normal.norm2();
+		}
+
+		PointXYZ projectToPlane(Plane<T> plane) {
+			plane.normal = plane.normal.normalize();
+			T k = -plane.D - (this->x*plane.normal.i) - (this->y*plane.normal.j) - (this->z*plane.normal.k);
+			return (*this) + (*reinterpret_cast<pcl::PointXYZ<T>*>(&plane.normal))*k;
+		}
+	};
+
+	
 
 	template<typename T>
 	struct TVector {
@@ -199,10 +220,6 @@ namespace pcl {
 	template<typename T>
 	using PointCloud = std::vector<PointXYZ<T>>;
 
-
-	template<typename T>
-	using Normal = DVector<T>;
-
 	template<typename T>
 	using NormalCloud = std::vector<DVector<T>>;
 
@@ -225,7 +242,7 @@ namespace pcl {
 
 		std::vector<pcl::Indices> polygon;
 
-		std::vector<pcl::Normal<T>> normals;
+		std::vector<pcl::Plane<T>> planes;
 
 	};
 

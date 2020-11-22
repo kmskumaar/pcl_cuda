@@ -5,6 +5,7 @@
 #include <iomanip>
 
 #include "pcl_base.h"
+#include "pcl_common.h"
 #include "stl_reader.h"
 
 namespace pcl {

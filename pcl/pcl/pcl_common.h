@@ -167,15 +167,14 @@ namespace pcl {
 
 		// Since only three points are present, the plane can be computed without using PCA
 		if (indices.indices.size() == 3 || inCloud.size() == 3) {
-			pcl::DVector<T> planeNormal;
+			pcl::Normal<T> planeNormal;
 			if (indices.indices.size() == 0) {
 				pcl::DVector<T> vec1 = reinterpret_cast<pcl::DVector<T>&>(inCloud[1] - inCloud[0]);
 				pcl::DVector<T> vec2 = reinterpret_cast<pcl::DVector<T>&>(inCloud[2] - inCloud[0]);
 
 				planeNormal = vec1.cross(vec2);
-				outPlane.A = planeNormal.i;
-				outPlane.B = planeNormal.j;
-				outPlane.C = planeNormal.k;
+				planeNormal = planeNormal.normalize();
+				outPlane.normal = planeNormal;
 				outPlane.D = (-1.0)*planeNormal.dot(reinterpret_cast<pcl::Normal<T>&>(inCloud[0]));
 			}
 			else {
@@ -184,9 +183,7 @@ namespace pcl {
 
 				planeNormal = vec1.cross(vec2);
 				planeNormal = planeNormal.normalize();
-				outPlane.A = planeNormal.i;
-				outPlane.B = planeNormal.j;
-				outPlane.C = planeNormal.k;
+				outPlane.normal = planeNormal;
 				outPlane.D = (-1.0)*planeNormal.dot(reinterpret_cast<pcl::Normal<T>&>(inCloud[indices.indices[0]]));
 			}
 			return outPlane;
@@ -205,7 +202,7 @@ namespace pcl {
 			matEig(idx, 1) = demeanCld[idx].y;
 			matEig(idx, 2) = demeanCld[idx].z;
 		}
-		Eigen::JacobiSVD<Eigen::MatrixXf> svd(matEig.transpose(), Eigen::ComputeThinU | Eigen::ComputeThinV);
+		Eigen::JacobiSVD<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> svd(matEig.transpose(), Eigen::ComputeThinU | Eigen::ComputeThinV);
 		Eigen::Matrix<T, 3, 1> ptNormalVec = svd.matrixU().col(2);
 		T variance = pow(svd.singularValues()(2, 0), 2);
 		ptNormal.i = ptNormalVec(0, 0);
@@ -214,11 +211,9 @@ namespace pcl {
 
 		pcl::flipNormalToViewPoint(centroid, { 0.0,0.0,0.0 }, ptNormal);
 
-		outPlane.A = ptNormal.i;
-		outPlane.B = ptNormal.j;
-		outPlane.C = ptNormal.k;
+		outPlane.normal = ptNormal;
 		outPlane.D = (-1.0)*ptNormal.dot(*reinterpret_cast<pcl::Normal<T>*>(&centroid));
-		rms = 10.0;	// TODO rms calculation using the singular values
+		rms = 0.0;	// TODO rms calculation using the singular values
 		return outPlane;
 	}
 
@@ -243,8 +238,8 @@ namespace pcl {
 	*/
 	template<typename T>
 	T distanceToPlane(pcl::Plane<T> planeParam, pcl::PointXYZ<T> point) {
-		pcl::Normal<T> planeNormal = (*reinterpret_cast<pcl::Normal<T>*>(&planeParam));
-		return (planeParam.D + planeNormal.dot(*reinterpret_cast<pcl::Normal<T>*>(&point)));
+		//pcl::Normal<T> planeNormal = (*reinterpret_cast<pcl::Normal<T>*>(&planeParam));		
+		return (planeParam.D + planeParam.normal.dot(*reinterpret_cast<pcl::Normal<T>*>(&point)))/ planeParam.normal.norm2();
 	}
 
 	//template<typename T>
@@ -285,5 +280,6 @@ namespace pcl {
 		});
 		return outCloud;
 	}
+
 }
 

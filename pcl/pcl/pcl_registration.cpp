@@ -48,5 +48,74 @@ pcl::TMatrix<T> pcl::Registration<T>::pointToPointSVD(pcl::PointCloud<T>& cloud_
 	return outTMatrix;
 }
 
+template <typename T>
+double pcl::Registration<T>::cloudToSurfaceRMSD(pcl::PointCloud<T>& inCloud, pcl::PolygonMesh<T>& inMesh, pcl::PointCloud<T>& outProjPtCld) {
+	double sumSqrError = 0.0;
+	int count = 0;
+	outProjPtCld.resize(inCloud.size());
+	for (int idx = 0; idx < inCloud.size(); idx++)
+	{
+		T distance = 0.0;
+		if (this->isPointLyingOnSurface(inCloud[idx], inMesh, distance, outProjPtCld[idx])) {
+			count++;
+			sumSqrError = sumSqrError + pow(distance, 2);
+		}
+	}
+	return sqrt(sumSqrError / static_cast<double>(count));
+}
+
+template<typename T>
+pcl::TMatrix<T> pcl::Registration<T>::pointToPointSVD(pcl::PointCloud<T>& cloud_Y, pcl::PointCloud<T>& cloud_X, pcl::Indices& indices) {
+	pcl::PointCloud<T> Y_reduced(indices.indices.size());
+	pcl::PointCloud<T> X_reduced(indices.indices.size());
+	
+	for (size_t idx = 0; idx < indices.indices.size(); idx++)
+	{
+		Y_reduced[idx] = cloud_Y[indices.indices[idx]];
+		X_reduced[idx] = cloud_X[indices.indices[idx]];
+	}
+
+	return this->pointToPointSVD(Y_reduced, X_reduced);
+}
+
+template <typename T>
+bool pcl::Registration<T>::isPointLyingOnSurface(pcl::PointXYZ<T>& inPt, pcl::PolygonMesh<T>& inMesh, T& distance, pcl::PointXYZ<T>& projPt) {
+	distance = 0.0;
+	projPt = { 0.0,0.0,0.0 };
+	bool flgFound = false;
+	for (int idx = 0; idx < inMesh.polygon.size(); idx++) {
+		pcl::Plane<T> plane = inMesh.planes[idx];
+		pcl::PointXYZ<T> tempPt = inPt.projectToPlane(inMesh.planes[idx]);
+
+		pcl::DVector<T> vec1 = reinterpret_cast<pcl::DVector<T>&>(inMesh.cloud[inMesh.polygon[idx].indices[0]] - tempPt);
+		pcl::DVector<T> vec2 = reinterpret_cast<pcl::DVector<T>&>(inMesh.cloud[inMesh.polygon[idx].indices[1]] - tempPt);
+		pcl::DVector<T> vec3 = reinterpret_cast<pcl::DVector<T>&>(inMesh.cloud[inMesh.polygon[idx].indices[2]] - tempPt);
+
+		T totalAngle = (vec1.angle(vec2) + vec2.angle(vec3) + vec3.angle(vec1))*180.0 / M_PI;
+
+		if (round(totalAngle) == 360.0) {
+			if (distance == 0.0) {
+				distance = inPt.distance2Plane(inMesh.planes[idx]);
+				projPt = tempPt;
+			}
+			if (abs(inPt.distance2Plane(inMesh.planes[idx])) < abs(distance)) {
+				distance = inPt.distance2Plane(inMesh.planes[idx]);
+				projPt = tempPt;
+			}
+			flgFound = true;
+		}
+	}
+	return flgFound;
+}
+
 template pcl::TMatrix<float> pcl::Registration<float>::pointToPointSVD(pcl::PointCloud<float>& cloud_Y, pcl::PointCloud<float>& cloud_X);
 template pcl::TMatrix<double> pcl::Registration<double>::pointToPointSVD(pcl::PointCloud<double>& cloud_Y, pcl::PointCloud<double>& cloud_X);
+
+template pcl::TMatrix<float> pcl::Registration<float>::pointToPointSVD(pcl::PointCloud<float>& cloud_Y, pcl::PointCloud<float>& cloud_X, pcl::Indices& indices);
+template pcl::TMatrix<double> pcl::Registration<double>::pointToPointSVD(pcl::PointCloud<double>& cloud_Y, pcl::PointCloud<double>& cloud_X, pcl::Indices& indices);
+
+template double pcl::Registration<float>::cloudToSurfaceRMSD(pcl::PointCloud<float>& inCloud, pcl::PolygonMesh<float>& inMesh, pcl::PointCloud<float>& outProjPtCld);
+template double pcl::Registration<double>::cloudToSurfaceRMSD(pcl::PointCloud<double>& inCloud, pcl::PolygonMesh<double>& inMesh, pcl::PointCloud<double>& outProjPtCld);
+
+template bool pcl::Registration<float>::isPointLyingOnSurface(pcl::PointXYZ<float>& inPt, pcl::PolygonMesh<float>& inMesh, float& distance, pcl::PointXYZ<float>& projPt);
+template bool pcl::Registration<double>::isPointLyingOnSurface(pcl::PointXYZ<double>& inPt, pcl::PolygonMesh<double>& inMesh, double& distance, pcl::PointXYZ<double>& projPt);

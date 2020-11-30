@@ -210,7 +210,7 @@ namespace pcl {
 
 	template<typename T>
 	std::ostream& operator << (std::ostream& os, const Plane<T>& planeParam) {
-		os << "A: " << planeParam.A << "\tB: " << planeParam.B << "\tC: " << planeParam.C << "\tD: " << planeParam.D;
+		os << "A: " << planeParam.normal.i << "\tB: " << planeParam.normal.j << "\tC: " << planeParam.normal.k	<< "\tD: " << planeParam.D;
 		return os;
 	}
 

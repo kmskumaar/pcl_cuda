@@ -19,7 +19,7 @@ pclcuda::CudaBase::CudaBase() {
 }
 
 pclcuda::CudaBase::~CudaBase() {
-	cudaError_t cudaStatus = cudaDeviceReset();
+	CUDA_CHECK(cudaDeviceReset());
 }
 
 template <typename T>

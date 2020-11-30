@@ -275,7 +275,7 @@ namespace pcl {
 	template<typename T>
 	pcl::PointCloud<T> transformPointCloud(pcl::PointCloud<T>& inCloud, pcl::TMatrix<T> tMatrix) {
 		pcl::PointCloud<T> outCloud(inCloud.size());
-		concurrency::parallel_for(0, static_cast<int>(inCloud.size()), [&inCloud, tMatrix](int idx) {
+		concurrency::parallel_for(0, static_cast<int>(inCloud.size()), [&inCloud, tMatrix, &outCloud](int idx) {
 			outCloud[idx] = inCloud[idx].transform(tMatrix);
 		});
 		return outCloud;

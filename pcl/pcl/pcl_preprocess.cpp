@@ -331,7 +331,7 @@ pcl::Normal<T> pcl::PreProcess<T>::computePointNormal(pcl::PointXYZ<T> &point, p
 		matEig(idx,1) = demeanCld[idx].y;
 		matEig(idx,2) = demeanCld[idx].z;
 	}
-	Eigen::JacobiSVD<Eigen::MatrixXf> svd(matEig.transpose(), Eigen::ComputeThinU | Eigen::ComputeThinV);
+	Eigen::JacobiSVD<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> svd(matEig.transpose(), Eigen::ComputeThinU | Eigen::ComputeThinV);
 	Eigen::Matrix<T, 3, 1> ptNormalVec = svd.matrixU().col(2);
 	ptNormal.i = ptNormalVec(0, 0);
 	ptNormal.j = ptNormalVec(1, 0);
